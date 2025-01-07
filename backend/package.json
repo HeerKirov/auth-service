@@ -1,0 +1,33 @@
+{
+  "name": "auth-service-backend",
+  "version": "1.0.0",
+  "main": "target/app.js",
+  "author": "Heer Kirov",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/app.ts",
+    "build": "tsup",
+    "run-build": "node dist/app.mjs"
+  },
+  "dependencies": {
+    "@koa/router": "^13.1.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "koa": "^2.15.3",
+    "koa-bodyparser": "^4.4.1",
+    "koa-jwt": "^4.0.4",
+    "pg": "^8.13.1",
+    "tslib": "^2.8.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.15.0",
+    "@types/node": "^22.10.5",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
