@@ -11,15 +11,16 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "target",
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "typeRoots": [
       "node_modules/@types"
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
+    "knexfile",
     "src/**/*.ts"
   ],
   "exclude": [
