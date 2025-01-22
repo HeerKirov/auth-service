@@ -8,6 +8,7 @@ export default {
     port: process.env.PORT || 3000,
     jwtSecret: process.env.JWT_SECRET || "your_secret_key",
     saltSecret: process.env.SALT_SECRET || "your_secret_key",
+    adminPassword: process.env.ADMIN_PASSWORD || "admin",
     db: <Knex.Config>{
         client: "pg",
         connection: {
