@@ -6,9 +6,17 @@ configDotenv({path: [".env.development.local", ".env"]})
 
 export default {
     port: process.env.PORT || 3000,
-    jwtSecret: process.env.JWT_SECRET || "your_secret_key",
-    saltSecret: process.env.SALT_SECRET || "your_secret_key",
-    adminPassword: process.env.ADMIN_PASSWORD || "admin",
+    app: {
+        jwtSecret: process.env.APP_JWT_SECRET || "your_secret_key",
+        domains: (process.env.APP_DOMAINS || "").split(",").map(n => n.trim()),
+    },
+    default: {
+        appId: process.env.DEFAULT_APP_ID || "auth-service",
+        appName: process.env.DEFAULT_APP_NAME || "Authorize Service",
+        adminUsername: process.env.DEFAULT_ADMIN_USERNAME || "admin",
+        adminDisplayName: process.env.DEFAULT_ADMIN_DISPLAY_NAME || "Administrator",
+        adminPassword: process.env.DEFAULT_ADMIN_PASSWORD || "admin",
+    },
     db: <Knex.Config>{
         client: "pg",
         connection: {

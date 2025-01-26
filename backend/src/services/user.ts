@@ -12,13 +12,15 @@ export async function createUser(user: UserCreateSchema) {
 
     const hashPassword = await hash(user.password, 10)
 
-    await db("user").insert({
+    await db.from<User>("user").insert({
         "username": user.username,
         "password": hashPassword,
         "displayName": user.displayName,
-        "avatar": user.avatar,
+        "avatar": user.avatar ?? null,
+        "enabled": true,
         "deleted": false,
-        "createdAt": new Date()
+        "createTime": new Date(),
+        "lastRefreshTime": null
     })
 }
 
@@ -30,9 +32,9 @@ export async function setupDefaultUser() {
     const user = await getUser("admin")
     if(user === null) {
         await createUser({
-            username: "admin",
-            password: config.adminPassword,
-            displayName: "Administrator",
+            username: config.default.adminUsername,
+            password: config.default.adminPassword,
+            displayName: config.default.adminDisplayName,
             avatar: null
         })
         console.log("Admin user created.")

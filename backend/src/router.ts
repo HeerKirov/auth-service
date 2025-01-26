@@ -1,14 +1,12 @@
 import Router from "@koa/router"
-import { db } from "@/utils/db"
+import { login, authorize, verify, token } from "@/resources/authorize"
 
 const router = new Router()
 
-router.get("/", ctx => {
-    ctx.body = "Hello, auth service."
-})
-
-router.post("/login", async ctx => {
-    ctx.body = await db.raw("SELECT 1")
-})
+router.get("/", ctx => ctx.body = "Hello, auth service.")
+router.post("/login", login)
+router.post("/authorize", authorize)
+router.post("/verify", verify)
+router.post("/token", token)
 
 export default router
