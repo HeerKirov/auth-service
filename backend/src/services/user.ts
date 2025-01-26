@@ -1,4 +1,4 @@
-import { hash } from "bcrypt"
+import { compare, hash } from "bcrypt"
 import { db } from "@/utils/db"
 import { User, UserCreateSchema } from "@/schema/user"
 import config from "@/config"
@@ -24,8 +24,21 @@ export async function createUser(user: UserCreateSchema) {
     })
 }
 
+export async function compareUser(username: string, password: string): Promise<User | null> {
+    const user = await getUser(username)
+    return user !== null && await compare(password, user.password) ? user : null
+}
+
 export async function getUser(username: string): Promise<User | null> {
     return (await db.first().from<User>("user").where({"username": username, "deleted": false})) ?? null
+}
+
+export async function getUserById(id: number): Promise<User | null> {
+    return (await db.first().from<User>("user").where({"id": id, "deleted": false})) ?? null
+}
+
+export async function updateUserRefreshTime(id: number, lastRefreshTime: Date): Promise<void> {
+    await db.from<User>("user").where({id}).update({lastRefreshTime})
 }
 
 export async function setupDefaultUser() {

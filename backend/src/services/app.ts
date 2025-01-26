@@ -23,6 +23,10 @@ export async function getApp(appId: string): Promise<App | null> {
     return (await db.first().from<App>("app").where({"appId": appId})) ?? null
 }
 
+export async function getAppById(id: number): Promise<App | null> {
+    return (await db.first().from<App>("app").where({"id": id})) ?? null
+}
+
 export async function setupDefaultApp() {
     const app = await getApp("auth-service")
     if(app === null) {

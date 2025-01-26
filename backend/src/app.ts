@@ -1,7 +1,7 @@
 import Koa from "koa"
-import jwt from "koa-jwt"
-import { bodyParser } from "@koa/bodyparser"
 import { ZodError } from "zod"
+import { bodyParser } from "@koa/bodyparser"
+import { auth } from "@/middleware/auth"
 import { setupDefaultUser } from "@/services/user"
 import { setupDefaultApp } from "@/services/app"
 import router from "@/router"
@@ -19,7 +19,7 @@ app.use((ctx, next) => next().catch(err => {
     }
 }))
 app.use(bodyParser())
-app.use(jwt({ secret: config.app.jwtSecret }).unless({ path: [/^\/login/, /^\/authorize/, /^\/verify/, /^\/token/] }))
+app.use(auth)
 app.use(router.routes())
 app.use(router.allowedMethods())
 app.listen(config.port, async () => {

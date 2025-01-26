@@ -1,14 +1,17 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const loginSchema = z.object({
     username: z.string(),
     password: z.string(),
 })
 
-export interface JsonWebTokenPayload {
+export interface StateUser {
     username: string
     displayName: string
     appId: string
-    createTime: number
-    expireTime: number
+}
+
+export interface JsonWebTokenPayload extends StateUser {
+    tokenCreateTime: number
+    tokenExpireTime: number
 }

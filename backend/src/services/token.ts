@@ -4,6 +4,7 @@ import { db } from "@/utils/db"
 import { RefreshToken } from "@/schema/token"
 import { JsonWebTokenPayload } from "@/schema/authorize"
 import { App } from "@/schema/app"
+import { updateUserRefreshTime } from "@/services/user"
 import config from "@/config"
 
 export async function createRefreshToken(user: User, app: App): Promise<RefreshToken> {
@@ -21,6 +22,8 @@ export async function createRefreshToken(user: User, app: App): Promise<RefreshT
         expireTime: expire,
         lastRefreshTime: now
     }).returning("id")
+
+    await updateUserRefreshTime(user.id, now)
 
     return {
         id,
@@ -40,8 +43,8 @@ export async function createAccessToken(user: User, app: App): Promise<string> {
         username: user.username,
         displayName: user.displayName,
         appId: app.appId,
-        createTime,
-        expireTime: createTime + 1000 * 60 * 60
+        tokenCreateTime: createTime,
+        tokenExpireTime: createTime + 1000 * 60 * 60
     }
     return jwt.sign(payload, jwtSecret, { expiresIn: "1h" })
 }

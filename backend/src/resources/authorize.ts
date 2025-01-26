@@ -1,8 +1,7 @@
 import { Context } from "koa"
-import { compare } from "bcrypt"
 import { userSchema } from "@/schema/user"
-import { loginSchema } from "@/schema/authorize"
-import { getUser } from "@/services/user"
+import { loginSchema, StateUser } from "@/schema/authorize"
+import { compareUser, getUser } from "@/services/user"
 import { getApp } from "@/services/app"
 import { createAccessToken, createRefreshToken } from "@/services/token"
 import config from "@/config"
@@ -14,8 +13,8 @@ import config from "@/config"
 export async function login(ctx: Context) {
     const form = loginSchema.parse(ctx.request.body)
 
-    const user = await getUser(form.username)
-    if(user === null || !await compare(form.password, user.password)) {
+    const user = await compareUser(form.username, form.password)
+    if(user === null) {
         ctx.status = 401
         ctx.response.body = {message: "Invalid username or password"}
         return
@@ -31,6 +30,7 @@ export async function login(ctx: Context) {
         accessToken,
         user: userSchema.parse(user)
     }
+    ctx.response.status = 201
 }
 
 export async function authorize(ctx: Context) {
@@ -46,5 +46,13 @@ export async function verify(ctx: Context) {
  * 该API要求且仅允许使用refreshToken认证。
  */
 export async function token(ctx: Context) {
+    const state: StateUser = ctx.state.user
 
+    const user = await getUser(state.username)
+    const app = await getApp(state.appId)
+
+    const accessToken = await createAccessToken(user!, app!)
+
+    ctx.response.body = {accessToken}
+    ctx.response.status = 201
 }
