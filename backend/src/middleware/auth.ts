@@ -1,8 +1,10 @@
 import { Context, Next } from "koa"
 import jwt from "koa-jwt"
+import { App } from "@/schema/app"
+import { User } from "@/schema/user"
 import { RefreshToken } from "@/schema/token"
-import { StateUser } from "@/schema/authorize"
-import { compareUser, getUserById, updateUserRefreshTime } from "@/services/user"
+import { JsonWebTokenPayload, State } from "@/schema/authorize"
+import { compareUser, getUser, getUserById, updateUserRefreshTime } from "@/services/user"
 import { getApp, getAppById } from "@/services/app"
 import config from "@/config"
 import { db } from "@/utils/db"
@@ -22,21 +24,21 @@ export async function auth(ctx: Context, next: Next) {
         if (authHeader?.startsWith("Basic ")) {
             const state = verifyBasicAuth(authHeader)
             if (state) {
-                ctx.state.user = state
+                ctx.state = state
                 return await next()
             }
         } else if (authHeader?.startsWith("Bearer ")) {
             const refreshToken = authHeader.split(" ")[1]
             const state = await verifyRefreshToken(refreshToken, true)
             if (state) {
-                ctx.state.user = state
+                ctx.state = state
                 return await next()
             }
         }
 
         ctx.status = 401
         ctx.body = { error: "Unauthorized" }
-        return;
+        return
     }
 
     // 仅允许 Refresh Token 认证
@@ -46,7 +48,7 @@ export async function auth(ctx: Context, next: Next) {
             const refreshToken = authHeader.split(" ")[1]
             const state = await verifyRefreshToken(refreshToken, false)
             if (state) {
-                ctx.state.user = state
+                ctx.state = state
                 return await next()
             }
         }
@@ -58,14 +60,20 @@ export async function auth(ctx: Context, next: Next) {
 
     // 一般 JWT 认证
     if (path.startsWith("/user/") || path.startsWith("/admin/")) {
-        return jwtMiddleware(ctx, next)
+        return await jwtMiddleware(ctx, async () => {
+            const user: JsonWebTokenPayload | undefined = ctx.state.user
+            if (user) {
+                ctx.state = await payloadToState(user)
+            }
+            await next()
+        })
     }
 
     // 其他路径跳过认证
     return await next()
 }
 
-async function verifyBasicAuth(authHeader: string): Promise<StateUser | null> {
+async function verifyBasicAuth(authHeader: string): Promise<State | null> {
     const base64Credentials = authHeader.split(" ")[1]
     const credentials = Buffer.from(base64Credentials, "base64").toString("utf-8")
     const [username, password] = credentials.split(":")
@@ -78,12 +86,14 @@ async function verifyBasicAuth(authHeader: string): Promise<StateUser | null> {
 
     return {
         username: user.username,
-        displayName: user.displayName,
-        appId: app.appId
+        appId: app.appId,
+        getPermissions: async () => [],
+        getUser: async () => user,
+        getApp: async () => app,
     }
 }
 
-async function verifyRefreshToken(token: string, strict: boolean): Promise<StateUser | null> {
+async function verifyRefreshToken(token: string, strict: boolean): Promise<State | null> {
     const record = await db.from<RefreshToken>("refresh_token").where({"token": token}).first()
     if(record === undefined) {
         return null
@@ -113,8 +123,29 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
 
     return {
         username: user.username,
-        displayName: user.displayName,
-        appId: app.appId
+        appId: app.appId,
+        getPermissions: async () => [], //TODO
+        getUser: async () => user,
+        getApp: async () => app,
+    }
+}
+
+async function payloadToState(payload: JsonWebTokenPayload): Promise<State> {
+    let user: User | null = null
+    let app: App | null = null
+
+    return {
+        username: payload.username,
+        appId: payload.appId,
+        getPermissions: async () => [], //TODO
+        async getUser() {
+            if(user === null) user = await getUser(payload.username)
+            return user!
+        },
+        async getApp() {
+            if(app === null) app = await getApp(payload.appId)
+            return app!
+        }
     }
 }
 

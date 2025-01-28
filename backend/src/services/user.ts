@@ -4,24 +4,37 @@ import { User, UserCreateSchema } from "@/schema/user"
 import config from "@/config"
 
 
-export async function createUser(user: UserCreateSchema) {
+export async function createUser(user: UserCreateSchema): Promise<User> {
     const exists = await db("user").where({"username": user.username, "deleted": false}).first()
     if (exists) {
         throw new Error("User already exists")
     }
 
     const hashPassword = await hash(user.password, 10)
+    const now = new Date()
 
-    await db.from<User>("user").insert({
+    const [{ id }] = await db.from<User>("user").insert({
         "username": user.username,
         "password": hashPassword,
         "displayName": user.displayName,
         "avatar": user.avatar ?? null,
         "enabled": true,
         "deleted": false,
-        "createTime": new Date(),
+        "createTime": now,
         "lastRefreshTime": null
-    })
+    }).returning("id")
+
+    return {
+        id,
+        username: user.username,
+        password: hashPassword,
+        displayName: user.displayName,
+        avatar: user.avatar ?? null,
+        enabled: true,
+        deleted: false,
+        createTime: now,
+        lastRefreshTime: null,
+    }
 }
 
 export async function compareUser(username: string, password: string): Promise<User | null> {

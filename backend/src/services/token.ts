@@ -41,8 +41,8 @@ export async function createAccessToken(user: User, app: App): Promise<string> {
     const createTime = Date.now()
     const payload: JsonWebTokenPayload = {
         username: user.username,
-        displayName: user.displayName,
         appId: app.appId,
+        permissions: [],
         tokenCreateTime: createTime,
         tokenExpireTime: createTime + 1000 * 60 * 60
     }
