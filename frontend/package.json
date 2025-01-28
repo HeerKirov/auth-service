@@ -10,6 +10,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },
   "devDependencies": {
+    "@roxi/routify": "^3.0.0-next.251",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@tsconfig/svelte": "^5.0.4",
@@ -18,9 +19,11 @@
     "postcss": "^8.5.1",
     "svelte": "^5.15.0",
     "svelte-check": "^4.1.1",
-    "svelte-routing": "^2.13.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "~5.6.2",
+    "typescript": "5.7.2",
     "vite": "^6.0.5"
+  },
+  "dependencies": {
+    "jwt-decode": "^4.0.0"
   }
 }
