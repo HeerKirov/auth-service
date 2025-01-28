@@ -1,5 +1,5 @@
 import { Context } from "koa"
-import { userCreateSchema, userSchema } from "@/schema/user"
+import { User, userCreateSchema, userSchema } from "@/schema/user"
 import { authorizeSchema, authorizeVerifySchema, loginSchema, State } from "@/schema/authorize"
 import { compareUser, createUser, getUser } from "@/services/user"
 import { getApp } from "@/services/app"
@@ -22,16 +22,7 @@ export async function login(ctx: Context) {
         return
     }
 
-    const app = await getApp(config.default.appId)
-
-    const refreshToken = (await createRefreshToken(user, app!)).token
-    const accessToken = await createAccessToken(user, app!)
-
-    ctx.response.body = {
-        refreshToken,
-        accessToken,
-        user: userSchema.parse(user)
-    }
+    await tokenForThisApp(ctx, user)
 }
 
 /**
@@ -42,16 +33,8 @@ export async function register(ctx: Context) {
 
     const user = await createUser(form)
 
-    const app = await getApp(config.default.appId)
+    await tokenForThisApp(ctx, user)
 
-    const refreshToken = (await createRefreshToken(user, app!)).token
-    const accessToken = await createAccessToken(user, app!)
-
-    ctx.response.body = {
-        refreshToken,
-        accessToken,
-        user: userSchema.parse(user)
-    }
     ctx.response.status = 201
 }
 
@@ -120,6 +103,7 @@ export async function verify(ctx: Context) {
     const refreshToken = (await createRefreshToken(user, targetApp)).token
     const accessToken = await createAccessToken(user, targetApp)
 
+    //该API是提供给其他后端调用的，因此refreshToken直接写入返回值，不需要写入cookie
     ctx.response.body = {
         refreshToken,
         accessToken,
@@ -140,3 +124,25 @@ export async function token(ctx: Context) {
     ctx.response.status = 201
 }
 
+async function tokenForThisApp(ctx: Context, user: User) {
+    const app = await getApp(config.default.appId)
+
+    const refreshToken = (await createRefreshToken(user, app!)).token
+    const accessToken = await createAccessToken(user, app!)
+
+    //默认情况下，refreshToken直接写入cookie，不会在返回值中显现
+    ctx.cookies.set("token", refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 })
+    if(config.debug) {
+        //而在debug开启的模式下，会改变返回值，在其中加入refreshToken，方便调试
+        ctx.response.body = {
+            refreshToken,
+            accessToken,
+            user: userSchema.parse(user)
+        }
+    }else{
+        ctx.response.body = {
+            accessToken,
+            user: userSchema.parse(user)
+        }
+    }
+}

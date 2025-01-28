@@ -6,6 +6,7 @@ configDotenv({path: [".env.development.local", ".env"]})
 
 export default {
     port: process.env.PORT || 3000,
+    debug: process.env.DEBUG?.toLowerCase() === "true",
     app: {
         jwtSecret: process.env.APP_JWT_SECRET || "your_secret_key",
         domains: (process.env.APP_DOMAINS || "").split(",").map(n => n.trim()),
