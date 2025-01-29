@@ -22,7 +22,7 @@ export async function fetchRequest<T, E = undefined>(url: string, init?: Request
     }
 }
 
-async function preloadAuthorization<E>(): Promise<IResponse<string, E>> {
+export async function preloadAuthorization<E>(): Promise<IResponse<string, E>> {
     const accessToken: string | null = sessionStorage.getItem("access-token")
     if (accessToken) {
         const decode = jwtDecode(accessToken)
