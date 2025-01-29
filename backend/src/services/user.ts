@@ -1,6 +1,6 @@
 import { compare, hash } from "bcrypt"
 import { db } from "@/utils/db"
-import { User, UserCreateSchema } from "@/schema/user"
+import { User, UserCreateSchema, UserPartialUpdateSchema, UserPasswordUpdateSchema } from "@/schema/user"
 import config from "@/config"
 
 
@@ -10,12 +10,12 @@ export async function createUser(user: UserCreateSchema): Promise<User> {
         throw new Error("User already exists")
     }
 
-    const hashPassword = await hash(user.password, 10)
+    const hashedPassword = await hash(user.password, 10)
     const now = new Date()
 
     const [{ id }] = await db.from<User>("user").insert({
         "username": user.username,
-        "password": hashPassword,
+        "password": hashedPassword,
         "displayName": user.displayName,
         "avatar": user.avatar ?? null,
         "enabled": true,
@@ -27,7 +27,7 @@ export async function createUser(user: UserCreateSchema): Promise<User> {
     return {
         id,
         username: user.username,
-        password: hashPassword,
+        password: hashedPassword,
         displayName: user.displayName,
         avatar: user.avatar ?? null,
         enabled: true,
@@ -50,7 +50,16 @@ export async function getUserById(id: number): Promise<User | null> {
     return (await db.first().from<User>("user").where({"id": id, "deleted": false})) ?? null
 }
 
-export async function updateUserRefreshTime(id: number, lastRefreshTime: Date): Promise<void> {
+export async function setUser(id: number, user: UserPartialUpdateSchema): Promise<void> {
+    await db.from<User>("user").where({id}).update({displayName: user.displayName, avatar: user.avatar})
+}
+
+export async function setUserPassword(id: number, user: UserPasswordUpdateSchema): Promise<void> {
+    const hashedPassword = await hash(user.password, 10)
+    await db.from<User>("user").where({id}).update({password: hashedPassword})
+}
+
+export async function flushUserRefreshTime(id: number, lastRefreshTime: Date): Promise<void> {
     await db.from<User>("user").where({id}).update({lastRefreshTime})
 }
 

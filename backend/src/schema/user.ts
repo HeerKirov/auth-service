@@ -7,6 +7,15 @@ export const userCreateSchema = z.object({
     avatar: z.string().nullable().optional(),
 })
 
+export const userPartialUpdateSchema = z.object({
+    displayName: z.string().optional(),
+    avatar: z.string().nullable().optional(),
+})
+
+export const userPasswordUpdateSchema = z.object({
+    password: z.string()
+})
+
 export const userSchema = z.object({
     username: z.string(),
     displayName: z.string(),
@@ -29,3 +38,7 @@ export interface User {
 }
 
 export type UserCreateSchema = z.infer<typeof userCreateSchema>
+
+export type UserPartialUpdateSchema = z.infer<typeof userPartialUpdateSchema>
+
+export type UserPasswordUpdateSchema = z.infer<typeof userPasswordUpdateSchema>

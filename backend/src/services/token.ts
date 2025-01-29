@@ -4,7 +4,7 @@ import { db } from "@/utils/db"
 import { RefreshToken } from "@/schema/token"
 import { JsonWebTokenPayload } from "@/schema/authorize"
 import { App } from "@/schema/app"
-import { updateUserRefreshTime } from "@/services/user"
+import { flushUserRefreshTime } from "@/services/user"
 import config from "@/config"
 
 export async function createRefreshToken(user: User, app: App): Promise<RefreshToken> {
@@ -23,7 +23,7 @@ export async function createRefreshToken(user: User, app: App): Promise<RefreshT
         lastRefreshTime: now
     }).returning("id")
 
-    await updateUserRefreshTime(user.id, now)
+    await flushUserRefreshTime(user.id, now)
 
     return {
         id,
@@ -34,6 +34,28 @@ export async function createRefreshToken(user: User, app: App): Promise<RefreshT
         expireTime: expire,
         lastRefreshTime: now
     }
+}
+
+export async function getRefreshToken(token: string): Promise<RefreshToken | null> {
+    return (await db.from<RefreshToken>("refresh_token").where({"token": token}).first()) ?? null
+}
+
+export async function flushRefreshTokenIfNecessary(record: RefreshToken): Promise<RefreshToken> {
+    const now = Date.now()
+    if(record.lastRefreshTime.getTime() - now > 1000 * 60 * 60 * 24) {
+        const expireTime = new Date(now + 1000 * 60 * 60 * 24 * 7)
+        const lastRefreshTime = new Date(now)
+
+        await db.from<RefreshToken>("refresh_token").where({id: record.id}).update({expireTime, lastRefreshTime})
+        await flushUserRefreshTime(record.userId, new Date(now))
+
+        return {...record, expireTime, lastRefreshTime}
+    }
+    return record
+}
+
+export async function deleteRefreshToken(record: RefreshToken): Promise<void> {
+    await db.from<RefreshToken>("refresh_token").where({id: record.id}).del()
 }
 
 export async function createAccessToken(user: User, app: App): Promise<string> {

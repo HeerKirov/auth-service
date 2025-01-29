@@ -1,13 +1,12 @@
 import { Context, Next } from "koa"
-import jwt from "jsonwebtoken"
+import jwt, { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken"
 import { App } from "@/schema/app"
 import { User } from "@/schema/user"
-import { RefreshToken } from "@/schema/token"
 import { JsonWebTokenPayload, State } from "@/schema/authorize"
-import { compareUser, getUser, getUserById, updateUserRefreshTime } from "@/services/user"
+import { compareUser, getUser, getUserById } from "@/services/user"
+import { deleteRefreshToken, flushRefreshTokenIfNecessary, getRefreshToken } from "@/services/token"
 import { getApp, getAppById } from "@/services/app"
 import config from "@/config"
-import { db } from "@/utils/db"
 
 export async function auth(ctx: Context, next: Next) {
     const { path } = ctx
@@ -17,7 +16,7 @@ export async function auth(ctx: Context, next: Next) {
         return await next()
     }
 
-    // 允许 Basic Auth 或 Refresh Token 认证，且仅认证服务自己的 Refresh Token 有效
+    // 允许Basic Auth或Refresh Token认证，且仅认证服务自己的 Refresh Token 有效。不允许其他app访问
     if (path === "/authorize") {
         const authType = analyseAuthType(ctx, { basic: true, refreshToken: true })
         if(authType.type === "Basic") {
@@ -38,7 +37,7 @@ export async function auth(ctx: Context, next: Next) {
         return
     }
 
-    // 仅允许 Refresh Token 认证
+    // 仅允许Refresh Token认证。允许其他app访问
     if (path === "/token") {
         const authType = analyseAuthType(ctx, { refreshToken: true })
         if (authType.type === "Bearer") {
@@ -54,11 +53,11 @@ export async function auth(ctx: Context, next: Next) {
         return
     }
 
-    // 一般 JWT 认证
+    // 一般JWT认证。除了/admin之外的path允许其他app访问
     if (path.startsWith("/user/") || path.startsWith("/admin/")) {
         const authType = analyseAuthType(ctx, { accessToken: true })
         if (authType.type === "Bearer") {
-            const state = await verifyAccessToken(authType.token)
+            const state = await verifyAccessToken(authType.token, path.startsWith("/admin/"))
             if (state) {
                 ctx.state = state
                 return await next()
@@ -110,32 +109,25 @@ async function verifyBasicAuth(username: string, password: string): Promise<Stat
 }
 
 async function verifyRefreshToken(token: string, strict: boolean): Promise<State | null> {
-    const record = await db.from<RefreshToken>("refresh_token").where({"token": token}).first()
-    if(record === undefined) {
+    const record = await getRefreshToken(token)
+    if(record === null) {
         return null
     }
-    const now = Date.now()
-    if(record.expireTime.getTime() < now) {
-        await db.from<RefreshToken>("refresh_token").where({id: record.id}).del()
+    if(record.expireTime.getTime() < Date.now()) {
+        await deleteRefreshToken(record)
         return null
     }
 
-    const user = await getUserById(record.userId)
-    const app = await getAppById(record.appId)
+    const [user, app] = await Promise.all([getUserById(record.userId), getAppById(record.appId)])
     if(user === null || app === null) {
         return null
     }
     if(strict && app.appId !== config.default.appId) {
+        //在strict=true的情况下，不允许来自其他app的refresh token进行认证，于是此时将返回
         return null
     }
 
-    if(record.lastRefreshTime.getTime() - now > 1000 * 60 * 60 * 24) {
-        await db.from<RefreshToken>("refresh_token").where({id: record.id}).update({
-            expireTime: new Date(now + 1000 * 60 * 60 * 24 * 7),
-            lastRefreshTime: new Date(now)
-        })
-        await updateUserRefreshTime(user.id, new Date(now))
-    }
+    await flushRefreshTokenIfNecessary(record)
 
     return {
         username: user.username,
@@ -146,15 +138,34 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
     }
 }
 
-async function verifyAccessToken(token: string): Promise<State | null> {
+async function verifyAccessToken(token: string, strict: boolean): Promise<State | null> {
     const decode = jwt.decode(token, { json: true })
-    if(!decode || decode.exp! * 1000 < Date.now()) {
-        return null
-    }
     const { username, appId, permissions } = decode as JsonWebTokenPayload
 
     let user: User | null = null
     let app: App | null = null
+
+    let secret: string
+    if(appId !== config.default.appId && !strict) {
+        //在strict=false的情况下，允许非auth service的、来自其他app的access token进行认证。于是此时需要查询对应app的secret
+        app = await getApp(appId)
+        if(app === null) {
+            return null
+        }
+        secret = app.appSecret
+    }else{
+        secret = config.app.jwtSecret
+    }
+
+    try {
+        jwt.verify(token, secret)
+    }catch(e) {
+        if(e instanceof TokenExpiredError || e instanceof JsonWebTokenError || e instanceof NotBeforeError) {
+            return null
+        }else{
+            throw e
+        }
+    }
 
     return {
         username,
