@@ -3,6 +3,7 @@ import { login, register, authorize, verify, token } from "@/resources/authorize
 import { getUserInfo, patchUserInfo, changeUserPassword } from "@/resources/user"
 import { deleteUser, listUsers, patchUser, patchUserPassword, postUser, retrieveUser } from "@/resources/admin-user"
 import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret } from "@/resources/admin-app"
+import { deleteAppPermission, listAppPermissions, patchAppPermission, postAppPermission } from "@/resources/admin-app-permission"
 
 const router = new Router()
 
@@ -30,5 +31,10 @@ router.patch("/admin/apps/:appId", patchApp)
 router.delete("/admin/apps/:appId", deleteApp)
 router.get("/admin/apps/:appId/secret", retrieveAppSecret)
 router.patch("/admin/apps/:appId/secret", patchAppSecret)
+
+router.get("/admin/apps/:appId/permissions", listAppPermissions)
+router.post("/admin/apps/:appId/permissions", postAppPermission)
+router.patch("/admin/apps/:appId/permissions/:id", patchAppPermission)
+router.delete("/admin/apps/:appId/permissions/:id", deleteAppPermission)
 
 export default router

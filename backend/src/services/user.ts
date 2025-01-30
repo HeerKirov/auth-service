@@ -2,7 +2,6 @@ import { compare, hash } from "bcrypt"
 import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
 import { UserFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
-import config from "@/config"
 
 export async function selectUsers(filter: UserFilter): Promise<User[]> {
     const builder = db.from<User>("user").orderBy("createTime", "desc")
@@ -78,17 +77,4 @@ export async function setUserDeleted(id: number, deleted: boolean): Promise<void
 
 export async function flushUserRefreshTime(id: number, lastRefreshTime: Date): Promise<void> {
     await db.from<User>("user").where({id}).update({lastRefreshTime})
-}
-
-export async function setupDefaultUser() {
-    const user = await getUser("admin")
-    if(user === null) {
-        await createUser({
-            username: config.default.adminUsername,
-            password: config.default.adminPassword,
-            displayName: config.default.adminDisplayName,
-            avatar: null
-        })
-        console.log("Admin user created.")
-    }
 }

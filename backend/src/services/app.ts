@@ -1,5 +1,7 @@
 import { randomBytes } from "crypto"
 import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
+import { AppPermission } from "@/schema/app-permission"
+import { UserAppPermission } from "@/schema/user-app"
 import { AppFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
 import config from "@/config"
@@ -27,7 +29,7 @@ export async function createApp(app: AppCreateSchema): Promise<App> {
         throw new Error("App already exists")
     }
 
-    const appSecret = app.appId !== config.default.appId ? randomBytes(32).toString("base64") : ""
+    const appSecret = app.appId !== config.app.appId ? randomBytes(32).toString("base64") : ""
     const createTime = new Date()
 
     const [{ id }] = await db.from<App>("app").insert({
@@ -60,19 +62,12 @@ export async function regenerateAppSecret(id: number): Promise<void> {
     await db.from<App>("app").where({id}).update({appSecret})
 }
 
-export async function setAppDeleted(id: number): Promise<number> {
-    return db.from<App>("app").where({id}).delete()
+export async function dropApp(id: number): Promise<number> {
+    const r = await db.from<App>("app").where({id}).delete()
+    if(r > 0) {
+        await db.from<AppPermission>("app_permission").where({appId: id}).delete()
+        await db.from<UserAppPermission>("user_app_permission").where({appId: id}).delete()
+    }
+    return r
 }
 
-export async function setupDefaultApp() {
-    const app = await getApp("auth-service")
-    if(app === null) {
-        await createApp({
-            appId: config.default.appId,
-            appName: config.default.appName,
-            avatar: null,
-            enabled: true,
-            domains: []
-        })
-    }
-}

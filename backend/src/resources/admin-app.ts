@@ -1,7 +1,7 @@
 import { Context } from "koa"
 import { appFilter } from "@/schema/filters"
 import { appAdminCreateSchema, appAdminPatchSchema, appSchema, appSecretSchema } from "@/schema/app"
-import { countApps, createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, setAppDeleted } from "@/services/app"
+import { countApps, createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
 
 export async function listApps(ctx: Context) {
     const filter = appFilter.parse(ctx.request.query)
@@ -57,7 +57,7 @@ export async function deleteApp(ctx: Context) {
         return
     }
 
-    await setAppDeleted(app.id)
+    await dropApp(app.id)
 
     ctx.response.body = {success: true}
     ctx.response.status = 204

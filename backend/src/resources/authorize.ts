@@ -125,7 +125,7 @@ export async function token(ctx: Context) {
 }
 
 async function tokenForThisApp(ctx: Context, user: User) {
-    const app = await getApp(config.default.appId)
+    const app = await getApp(config.app.appId)
 
     const refreshToken = (await createRefreshToken(user, app!)).token
     const accessToken = await createAccessToken(user, app!)

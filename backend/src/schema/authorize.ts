@@ -23,13 +23,18 @@ export interface State {
     appId: string
     getUser(): Promise<User>
     getApp(): Promise<App>
-    getPermissions(): Promise<string[]>
+    getPermissions(): Promise<Permission[]>
 }
 
 export interface JsonWebTokenPayload {
     username: string
     appId: string
-    permissions: string[]
+    permissions: Permission[]
     tokenCreateTime: number
     tokenExpireTime: number
+}
+
+export interface Permission {
+    permission: string
+    arguments: Record<string, unknown>
 }

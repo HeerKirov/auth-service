@@ -7,7 +7,7 @@ export async function errorHandler(ctx: Context, next: Next) {
     } catch(err) {
         if(err instanceof ZodError) {
             ctx.status = 400
-            ctx.response.body = {message: err.format()}
+            ctx.response.body = {message: err.message}
         } else {
             ctx.status = 500
             ctx.response.body = {message: String(err)}

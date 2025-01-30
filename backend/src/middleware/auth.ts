@@ -6,6 +6,7 @@ import { JsonWebTokenPayload, State } from "@/schema/authorize"
 import { compareUser, getUser, getUserById } from "@/services/user"
 import { deleteRefreshToken, flushRefreshTokenIfNecessary, getRefreshToken } from "@/services/token"
 import { getApp, getAppById } from "@/services/app"
+import { selectUserAppPermissions } from "@/services/user-permission"
 import config from "@/config"
 
 export async function auth(ctx: Context, next: Next) {
@@ -97,12 +98,19 @@ async function verifyBasicAuth(username: string, password: string): Promise<Stat
     const user = await compareUser(username, password)
     if(user === null) return null
 
-    const app = (await getApp(config.default.appId))!
+    const app = (await getApp(config.app.appId))!
+
+    let permissions: {permission: string, arguments: Record<string, unknown>}[] | null = null
 
     return {
         username: user.username,
         appId: app.appId,
-        getPermissions: async () => [],
+        async getPermissions() {
+            if(permissions === null) {
+                permissions = await selectUserAppPermissions(user.id, app.id)
+            }
+            return permissions
+        },
         getUser: async () => user,
         getApp: async () => app,
     }
@@ -122,17 +130,24 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
     if(user === null || app === null) {
         return null
     }
-    if(strict && app.appId !== config.default.appId) {
+    if(strict && app.appId !== config.app.appId) {
         //在strict=true的情况下，不允许来自其他app的refresh token进行认证，于是此时将返回
         return null
     }
 
     await flushRefreshTokenIfNecessary(record)
 
+    let permissions: {permission: string, arguments: Record<string, unknown>}[] | null = null
+
     return {
         username: user.username,
         appId: app.appId,
-        getPermissions: async () => [], //TODO
+        async getPermissions() {
+            if(permissions === null) {
+                permissions = await selectUserAppPermissions(user.id, app.id)
+            }
+            return permissions
+        },
         getUser: async () => user,
         getApp: async () => app,
     }
@@ -140,13 +155,16 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
 
 async function verifyAccessToken(token: string, strict: boolean): Promise<State | null> {
     const decode = jwt.decode(token, { json: true })
+    if(decode === null) {
+        return null
+    }
     const { username, appId, permissions } = decode as JsonWebTokenPayload
 
     let user: User | null = null
     let app: App | null = null
 
     let secret: string
-    if(appId !== config.default.appId && !strict) {
+    if(appId !== config.app.appId && !strict) {
         //在strict=false的情况下，允许非auth service的、来自其他app的access token进行认证。于是此时需要查询对应app的secret
         app = await getApp(appId)
         if(app === null) {

@@ -14,6 +14,13 @@ export const appFilter = z.object({
     offset: z.coerce.number().min(0).optional(),
 })
 
+export const offsetAndLimitFilter = z.object({
+    limit: z.coerce.number().min(1).optional(),
+    offset: z.coerce.number().min(0).optional(),
+})
+
 export type UserFilter = z.infer<typeof userFilter>
 
 export type AppFilter = z.infer<typeof appFilter>
+
+export type OffsetAndLimitFilter = z.infer<typeof offsetAndLimitFilter>
