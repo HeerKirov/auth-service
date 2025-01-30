@@ -1,7 +1,7 @@
 import { Context } from "koa"
 import { State } from "@/schema/authorize"
-import { userPartialUpdateSchema, userPasswordUpdateSchema, userSchema } from "@/schema/user"
-import { getUserById, setUser, setUserPassword } from "@/services/user"
+import { userPatchSchema, userChangePasswordSchema, userSchema } from "@/schema/user"
+import { compareUser, getUserById, setUser } from "@/services/user"
 
 export async function getUserInfo(ctx: Context) {
     const state: State = ctx.state
@@ -10,7 +10,7 @@ export async function getUserInfo(ctx: Context) {
 }
 
 export async function patchUserInfo(ctx: Context) {
-    const form = userPartialUpdateSchema.parse(ctx.request.body)
+    const form = userPatchSchema.parse(ctx.request.body)
 
     const state: State = ctx.state
     const user = await state.getUser()
@@ -20,13 +20,18 @@ export async function patchUserInfo(ctx: Context) {
     ctx.response.body = userSchema.parse(await getUserById(user.id))
 }
 
-export async function patchUserPassword(ctx: Context) {
-    const form = userPasswordUpdateSchema.parse(ctx.request.body)
+export async function changeUserPassword(ctx: Context) {
+    const form = userChangePasswordSchema.parse(ctx.request.body)
 
     const state: State = ctx.state
-    const user = await state.getUser()
+    const user = await compareUser(state.username, form.oldPassword)
+    if(user === null) {
+        ctx.response.status = 401
+        ctx.response.body = {message: "Invalid Password"}
+        return
+    }
 
-    await setUserPassword(user.id, form)
+    await setUser(user.id, {password: form.password})
 
     ctx.response.body = {"success": true}
 }

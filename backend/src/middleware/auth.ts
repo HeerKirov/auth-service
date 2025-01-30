@@ -80,14 +80,14 @@ function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {ba
         const credentials = Buffer.from(base64Credentials, "base64").toString("utf-8")
         const [username, password] = credentials.split(":")
         return {type: "Basic" as const, username, password}
-    }else if((accessToken || refreshToken) && headers.authorization?.startsWith("Bearer ")) {
-        const refreshToken = headers.authorization.split(" ")[1]
-        return {type: "Bearer" as const, token: refreshToken}
     }else if(refreshToken) {
         const token = cookies.get("token")
         if(token) {
             return {type: "Bearer" as const, token}
         }
+    }else if((accessToken || refreshToken) && headers.authorization?.startsWith("Bearer ")) {
+        const refreshToken = headers.authorization.split(" ")[1]
+        return {type: "Bearer" as const, token: refreshToken}
     }
 
     return {type: "Unauthorized" as const}

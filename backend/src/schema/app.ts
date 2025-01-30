@@ -1,11 +1,31 @@
 import { z } from "zod"
 
-export const appCreateSchema = z.object({
+export const appAdminCreateSchema = z.object({
     appId: z.string(),
     appName: z.string(),
-    appSecret: z.string(),
     avatar: z.string().nullable().optional(),
+    enabled: z.boolean().default(true),
     domains: z.array(z.string())
+})
+
+export const appAdminPatchSchema = z.object({
+    appName: z.string().optional(),
+    avatar: z.string().nullable().optional(),
+    enabled: z.boolean().optional(),
+    domains: z.array(z.string()).optional(),
+})
+
+export const appSchema = z.object({
+    appId: z.string(),
+    appName: z.string(),
+    avatar: z.string().nullable(),
+    enabled: z.boolean(),
+    domains: z.array(z.string()),
+    createTime: z.date()
+})
+
+export const appSecretSchema = z.object({
+    appSecret: z.string()
 })
 
 export interface App {
@@ -19,4 +39,6 @@ export interface App {
     createTime: Date
 }
 
-export type AppCreateSchema = z.infer<typeof appCreateSchema>
+export type AppCreateSchema = z.infer<typeof appAdminCreateSchema>
+
+export type AppUpdateSchema = z.infer<typeof appAdminPatchSchema> & Partial<z.infer<typeof appSecretSchema>>

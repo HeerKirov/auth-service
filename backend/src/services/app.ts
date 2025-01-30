@@ -1,30 +1,67 @@
-import { App, AppCreateSchema } from "@/schema/app"
+import { randomBytes } from "crypto"
+import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
+import { AppFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
 import config from "@/config"
 
-export async function createApp(app: AppCreateSchema) {
+export async function selectApps(filter: AppFilter): Promise<App[]> {
+    const builder = db.from<App>("app").orderBy("createTime", "desc")
+    if(filter.search) builder.where("appName", "ilike", `%${filter.search}%`).orWhere("appId", "ilike", `%${filter.search}%`)
+    if(filter.enabled) builder.where("enabled", filter.enabled)
+    if(filter.limit) builder.limit(filter.limit)
+    if(filter.offset) builder.offset(filter.offset)
+    return builder
+}
+
+export async function countApps(filter: AppFilter): Promise<number> {
+    const builder = db.from<App>("app")
+    if(filter.search) builder.where("appName", "ilike", `%${filter.search}%`).orWhere("appId", "ilike", `%${filter.search}%`)
+    if(filter.enabled) builder.where("enabled", filter.enabled)
+    const [{ count }] = await builder.count()
+    return parseInt(<string>count)
+}
+
+export async function createApp(app: AppCreateSchema): Promise<App> {
     const exists = await db("app").where({"appId": app.appId}).first()
     if (exists) {
         throw new Error("App already exists")
     }
 
-    await db.from<App>("app").insert({
+    const appSecret = app.appId !== config.default.appId ? randomBytes(32).toString("base64") : ""
+    const createTime = new Date()
+
+    const [{ id }] = await db.from<App>("app").insert({
         "appId": app.appId,
         "appName": app.appName,
-        "appSecret": app.appSecret,
+        "appSecret": appSecret,
         "avatar": app.avatar ?? null,
-        "domains": app.domains,
-        "enabled": true,
-        "createTime": new Date(),
-    })
+        "domains": JSON.stringify(app.domains) as any,
+        "enabled": app.enabled,
+        "createTime": createTime,
+    }).returning("id")
+
+    return {id, appSecret, avatar: app.avatar ?? null, ...app, createTime}
 }
 
 export async function getApp(appId: string): Promise<App | null> {
-    return (await db.first().from<App>("app").where({"appId": appId})) ?? null
+    return (await db.first().from<App>("app").where({appId})) ?? null
 }
 
 export async function getAppById(id: number): Promise<App | null> {
-    return (await db.first().from<App>("app").where({"id": id})) ?? null
+    return (await db.first().from<App>("app").where({id})) ?? null
+}
+
+export async function setApp(id: number, app: AppUpdateSchema): Promise<void> {
+    await db.from<App>("app").where({id}).update({...app, domains: app.domains ? JSON.stringify(app.domains) as any : undefined})
+}
+
+export async function regenerateAppSecret(id: number): Promise<void> {
+    const appSecret = randomBytes(32).toString("base64")
+    await db.from<App>("app").where({id}).update({appSecret})
+}
+
+export async function setAppDeleted(id: number): Promise<number> {
+    return db.from<App>("app").where({id}).delete()
 }
 
 export async function setupDefaultApp() {
@@ -33,8 +70,8 @@ export async function setupDefaultApp() {
         await createApp({
             appId: config.default.appId,
             appName: config.default.appName,
-            appSecret: "",
             avatar: null,
+            enabled: true,
             domains: []
         })
     }

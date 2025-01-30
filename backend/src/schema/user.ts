@@ -7,13 +7,24 @@ export const userCreateSchema = z.object({
     avatar: z.string().nullable().optional(),
 })
 
-export const userPartialUpdateSchema = z.object({
+export const userPatchSchema = z.object({
     displayName: z.string().optional(),
     avatar: z.string().nullable().optional(),
 })
 
-export const userPasswordUpdateSchema = z.object({
+export const userChangePasswordSchema = z.object({
+    oldPassword: z.string(),
     password: z.string()
+})
+
+export const userAdminChangePasswordSchema = z.object({
+    password: z.string()
+})
+
+export const userAdminPatchSchema = z.object({
+    displayName: z.string().optional(),
+    enabled: z.boolean().optional(),
+    avatar: z.string().nullable().optional(),
 })
 
 export const userSchema = z.object({
@@ -39,6 +50,4 @@ export interface User {
 
 export type UserCreateSchema = z.infer<typeof userCreateSchema>
 
-export type UserPartialUpdateSchema = z.infer<typeof userPartialUpdateSchema>
-
-export type UserPasswordUpdateSchema = z.infer<typeof userPasswordUpdateSchema>
+export type UserUpdateSchema = z.infer<typeof userAdminPatchSchema> & Partial<z.infer<typeof userAdminChangePasswordSchema>>

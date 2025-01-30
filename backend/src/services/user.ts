@@ -1,8 +1,25 @@
 import { compare, hash } from "bcrypt"
+import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
+import { UserFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
-import { User, UserCreateSchema, UserPartialUpdateSchema, UserPasswordUpdateSchema } from "@/schema/user"
 import config from "@/config"
 
+export async function selectUsers(filter: UserFilter): Promise<User[]> {
+    const builder = db.from<User>("user").orderBy("createTime", "desc")
+    if(filter.search) builder.where("username", "ilike", `%${filter.search}%`).orWhere("displayName", "ilike", `%${filter.search}%`)
+    if(filter.enabled) builder.where("enabled", filter.enabled)
+    if(filter.limit) builder.limit(filter.limit)
+    if(filter.offset) builder.offset(filter.offset)
+    return builder
+}
+
+export async function countUsers(filter: UserFilter): Promise<number> {
+    const builder = db.from<User>("user")
+    if(filter.search) builder.where("username", "ilike", `%${filter.search}%`).orWhere("displayName", "ilike", `%${filter.search}%`)
+    if(filter.enabled) builder.where("enabled", filter.enabled)
+    const [{ count }] = await builder.count()
+    return parseInt(<string>count)
+}
 
 export async function createUser(user: UserCreateSchema): Promise<User> {
     const exists = await db("user").where({"username": user.username, "deleted": false}).first()
@@ -50,13 +67,13 @@ export async function getUserById(id: number): Promise<User | null> {
     return (await db.first().from<User>("user").where({"id": id, "deleted": false})) ?? null
 }
 
-export async function setUser(id: number, user: UserPartialUpdateSchema): Promise<void> {
-    await db.from<User>("user").where({id}).update({displayName: user.displayName, avatar: user.avatar})
+export async function setUser(id: number, user: UserUpdateSchema): Promise<void> {
+    const hashedPassword = user.password !== undefined ? await hash(user.password, 10) : undefined
+    await db.from<User>("user").where({id}).update({...user, password: hashedPassword})
 }
 
-export async function setUserPassword(id: number, user: UserPasswordUpdateSchema): Promise<void> {
-    const hashedPassword = await hash(user.password, 10)
-    await db.from<User>("user").where({id}).update({password: hashedPassword})
+export async function setUserDeleted(id: number, deleted: boolean): Promise<void> {
+    await db.from<User>("user").where({id}).update({deleted})
 }
 
 export async function flushUserRefreshTime(id: number, lastRefreshTime: Date): Promise<void> {
