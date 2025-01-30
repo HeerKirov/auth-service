@@ -5,8 +5,8 @@ export async function fetchRequest<T, E = undefined>(url: string, init?: Request
     const headers: Record<string, string> = {"content-type": "application/json"}
 
     if(authorization) {
-        const r = await preloadAuthorization<E>()
-        if(!r.ok) return r
+        const r = await preloadAuthorization()
+        if(!r.ok) return {ok: false, status: r.status, message: r.message, error: r.error as E}
         headers["Authorization"] = `Bearer ${r.data}`
     }
 
@@ -22,12 +22,14 @@ export async function fetchRequest<T, E = undefined>(url: string, init?: Request
     }
 }
 
-export async function preloadAuthorization<E>(): Promise<IResponse<string, E>> {
-    const accessToken: string | null = sessionStorage.getItem("access-token")
-    if (accessToken) {
-        const decode = jwtDecode(accessToken)
-        if(decode.exp! * 1000 >= Date.now()) {
-            return {ok: true, data: accessToken}
+export async function preloadAuthorization(options?: {onlyRefreshToken: boolean}): Promise<IResponse<string, undefined>> {
+    if(!options?.onlyRefreshToken) {
+        const accessToken: string | null = sessionStorage.getItem("access-token")
+        if (accessToken) {
+            const decode = jwtDecode(accessToken)
+            if(decode.exp! * 1000 >= Date.now()) {
+                return {ok: true, data: accessToken}
+            }
         }
     }
 
@@ -36,7 +38,7 @@ export async function preloadAuthorization<E>(): Promise<IResponse<string, E>> {
         sessionStorage.setItem("access-token", r.data.accessToken)
         return {ok: true, data: r.data.accessToken}
     }else{
-        return {ok: false, status: r.status, message: r.message, error: r.error as E}
+        return {ok: false, status: r.status, message: r.message, error: r.error}
     }
 }
 

@@ -37,9 +37,7 @@ const getStyleOfColors = () => {
     }
 }
 
-let cls = $derived.by(() => {
-    return [attrs["class"], ...getStyleOfColors()]
-})
+let cls = $derived([attrs["class"], ...getStyleOfColors()])
 
 </script>
 
