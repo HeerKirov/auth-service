@@ -1,7 +1,8 @@
 import { randomBytes } from "crypto"
-import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
 import { AppPermission } from "@/schema/app-permission"
-import { UserAppPermission } from "@/schema/user-app"
+import { RefreshToken } from "@/schema/token"
+import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
+import { UserAppPermission, UserAppRelation } from "@/schema/user-app"
 import { AppFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
 import config from "@/config"
@@ -67,6 +68,8 @@ export async function dropApp(id: number): Promise<number> {
     if(r > 0) {
         await db.from<AppPermission>("app_permission").where({appId: id}).delete()
         await db.from<UserAppPermission>("user_app_permission").where({appId: id}).delete()
+        await db.from<UserAppRelation>("user_app_relation").where({appId: id}).delete()
+        await db.from<RefreshToken>("refresh_token").where({appId: id}).delete()
     }
     return r
 }

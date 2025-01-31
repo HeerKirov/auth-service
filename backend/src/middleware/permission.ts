@@ -6,7 +6,7 @@ export async function permission(ctx: Context, next: Next) {
     if(ctx.path.startsWith("/admin/users")) {
         const state: State = ctx.state
         const permissions = await state.getPermissions()
-        if(!permissions.some(p => p.permission === "ADMIN")) {
+        if(!permissions.some(p => p.name === "ADMIN")) {
             ctx.status = 403
             ctx.response.body = {message: "Forbidden"}
             return
@@ -17,7 +17,7 @@ export async function permission(ctx: Context, next: Next) {
     if(ctx.path.startsWith("/admin/apps")) {
         const state: State = ctx.state
         const permissions = await state.getPermissions()
-        if(permissions.some(p => p.permission === "ADMIN")) {
+        if(permissions.some(p => p.name === "ADMIN")) {
             //continue
         }else{
             const matcher = ctx.path.match(/^\/admin\/apps\/(?<appId>[^\/]+)(\/(?<sub>permissions|users))?/)
@@ -28,17 +28,17 @@ export async function permission(ctx: Context, next: Next) {
             }
             const appId = matcher.groups!["appId"]
             const sub = matcher.groups!["sub"]
-            if(sub || (!sub && ctx.method === "PATCH")) {
-                if(permissions.some(p => p.permission === "ADMIN" || (p.permission === "APP_ADMIN" && p.arguments["appId"] === appId))) {
+            if(sub || (!sub && ctx.method === "PATCH" || ctx.method === "GET")) {
+                if(permissions.some(p => p.name === "ADMIN" || (p.name === "APP_ADMIN" && p.args["appId"] === appId))) {
                     //continue
                 }else{
                     ctx.status = 403
-                    ctx.response.body = {message: "Forbidden"}
+                    ctx.response.body = {message: "You are not APP_ADMIN of this app"}
                     return
                 }
             }else{
                 ctx.status = 403
-                ctx.response.body = {message: "Forbidden"}
+                ctx.response.body = {message: "You are not Admin of this app"}
                 return
             }
         }

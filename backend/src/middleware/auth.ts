@@ -96,11 +96,11 @@ function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {ba
 
 async function verifyBasicAuth(username: string, password: string): Promise<State | null> {
     const user = await compareUser(username, password)
-    if(user === null) return null
+    if(user === null || !user.enabled) return null
 
     const app = (await getApp(config.app.appId))!
 
-    let permissions: {permission: string, arguments: Record<string, unknown>}[] | null = null
+    let permissions: {name: string, args: Record<string, unknown>}[] | null = null
 
     return {
         username: user.username,
@@ -134,10 +134,13 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
         //在strict=true的情况下，不允许来自其他app的refresh token进行认证，于是此时将返回
         return null
     }
+    if(!user.enabled || !app.enabled) {
+        return null
+    }
 
     await flushRefreshTokenIfNecessary(record)
 
-    let permissions: {permission: string, arguments: Record<string, unknown>}[] | null = null
+    let permissions: {name: string, args: Record<string, unknown>}[] | null = null
 
     return {
         username: user.username,
@@ -167,7 +170,7 @@ async function verifyAccessToken(token: string, strict: boolean): Promise<State 
     if(appId !== config.app.appId && !strict) {
         //在strict=false的情况下，允许非auth service的、来自其他app的access token进行认证。于是此时需要查询对应app的secret
         app = await getApp(appId)
-        if(app === null) {
+        if(app === null || !app.enabled) {
             return null
         }
         secret = app.appSecret

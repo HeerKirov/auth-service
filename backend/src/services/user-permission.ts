@@ -1,11 +1,12 @@
 import { UserAppPermission } from "@/schema/user-app"
 import { db } from "@/utils/db"
 
-export async function selectUserAppPermissions(userId: number, appId: number): Promise<{permission: string, arguments: Record<string, unknown>}[]> {
+export async function selectUserAppPermissions(userId: number, appId: number): Promise<{name: string, args: Record<string, unknown>}[]> {
     return db.from("user_app_permission")
-        .select("user_app_permission.arguments as arguments", "app_permission.name AS permission")
+        .select("user_app_permission.arguments as args", "app_permission.name AS name")
         .innerJoin("app_permission", "user_app_permission.permissionId", "app_permission.id")
         .where({"user_app_permission.appId": appId, "user_app_permission.userId": userId})
+        .orderBy("app_permission.createTime", "ASC")
 }
 
 export async function upsertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>): Promise<UserAppPermission> {
@@ -22,4 +23,8 @@ export async function upsertUserAppPermission(userId: number, appId: number, per
 
         return {...exists, arguments: args}
     }
+}
+
+export async function dropUserAppPermission(userId: number, appId: number, permissionId: number): Promise<number> {
+    return db.from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId}).delete()
 }

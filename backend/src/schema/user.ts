@@ -1,28 +1,28 @@
 import { z } from "zod"
 
 export const userCreateSchema = z.object({
-    username: z.string(),
-    password: z.string(),
-    displayName: z.string(),
+    username: z.string().max(128),
+    password: z.string().max(64),
+    displayName: z.string().max(128),
     avatar: z.string().nullable().optional(),
 })
 
 export const userPatchSchema = z.object({
-    displayName: z.string().optional(),
+    displayName: z.string().max(128).optional(),
     avatar: z.string().nullable().optional(),
 })
 
 export const userChangePasswordSchema = z.object({
-    oldPassword: z.string(),
-    password: z.string()
+    oldPassword: z.string().max(64),
+    password: z.string().max(64)
 })
 
 export const userAdminChangePasswordSchema = z.object({
-    password: z.string()
+    password: z.string().max(64)
 })
 
 export const userAdminPatchSchema = z.object({
-    displayName: z.string().optional(),
+    displayName: z.string().max(128).optional(),
     enabled: z.boolean().optional(),
     avatar: z.string().nullable().optional(),
 })
@@ -51,3 +51,5 @@ export interface User {
 export type UserCreateSchema = z.infer<typeof userCreateSchema>
 
 export type UserUpdateSchema = z.infer<typeof userAdminPatchSchema> & Partial<z.infer<typeof userAdminChangePasswordSchema>>
+
+export const userFields = ["id", "username", "password", "displayName", "avatar", "enabled", "deleted", "createTime", "lastRefreshTime"] as const

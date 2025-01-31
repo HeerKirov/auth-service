@@ -11,6 +11,7 @@ export async function errorHandler(ctx: Context, next: Next) {
         } else {
             ctx.status = 500
             ctx.response.body = {message: String(err)}
+            console.error(err)
         }
     }
 }

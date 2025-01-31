@@ -1,3 +1,26 @@
+import { z } from "zod"
+import { userSchema } from "@/schema/user"
+
+export const userAppRelationSchema = z.object({
+    fields: z.record(z.string(), z.any()),
+    createTime: z.date(),
+    lastRefreshTime: z.date().nullable()
+})
+
+export const appUserPermissionSchema = z.array(z.object({
+    name: z.string(),
+    args: z.record(z.string(), z.any())
+}))
+
+export const adminAppUserSchema = z.object({
+    user: userSchema,
+    userAppRelation: userAppRelationSchema,
+    userAppPermissions: appUserPermissionSchema.optional()
+}).transform(({ user, userAppRelation, userAppPermissions }) => ({
+    ...user,
+    userAppRelation,
+    userAppPermissions
+}))
 
 export interface UserAppRelation {
     id: number
@@ -16,3 +39,5 @@ export interface UserAppPermission {
     arguments: Record<string, any>
     createTime: Date
 }
+
+export const userAppRelationFields = ["id", "appId", "userId", "fields", "createTime", "lastRefreshTime"] as const

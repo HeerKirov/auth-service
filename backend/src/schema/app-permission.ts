@@ -1,21 +1,21 @@
 import { z } from "zod"
 
 const argumentDefinitionSchema = z.object({
-    name: z.string(),
+    name: z.string().max(128),
     type: z.enum(["string", "number", "boolean"]),
     optional: z.boolean(),
-    comment: z.string().nullable()
+    comment: z.string().max(256).nullable()
 })
 
 export const permissionCreateSchema = z.object({
-    name: z.string(),
-    displayName: z.string(),
+    name: z.string().max(128),
+    displayName: z.string().max(128),
     arguments: z.array(argumentDefinitionSchema)
 })
 
 export const permissionUpdateSchema = z.object({
-    name: z.string().optional(),
-    displayName: z.string().optional(),
+    name: z.string().max(128).optional(),
+    displayName: z.string().max(128).optional(),
     arguments: z.array(argumentDefinitionSchema).optional()
 })
 

@@ -1,4 +1,5 @@
 import { AppPermission, PermissionCreateSchema, PermissionUpdateSchema } from "@/schema/app-permission"
+import { UserAppPermission } from "@/schema/user-app"
 import { OffsetAndLimitFilter } from "@/schema/filters"
 import { db } from "@/utils/db"
 
@@ -45,11 +46,14 @@ export async function upsertAppPermission(appId: number, p: PermissionCreateSche
 
         return {id, appId, ...p, createTime}
     }
-
 }
 
 export async function getAppPermission(id: number): Promise<AppPermission | null> {
     return (await db.first().from<AppPermission>("app_permission").where({id})) ?? null
+}
+
+export async function getAppPermissionByName(appId: number, name: string): Promise<AppPermission | null> {
+    return (await db.first().from<AppPermission>("app_permission").where({appId, name})) ?? null
 }
 
 export async function setAppPermission(id: number, p: PermissionUpdateSchema): Promise<void> {
@@ -57,5 +61,9 @@ export async function setAppPermission(id: number, p: PermissionUpdateSchema): P
 }
 
 export async function dropAppPermission(id: number): Promise<number> {
-    return db.from<AppPermission>("app_permission").where({id}).delete()
+    const r = await db.from<AppPermission>("app_permission").where({id}).delete()
+    if(r > 0) {
+        await db.from<UserAppPermission>("user_app_permission").where({permissionId: id}).delete()
+    }
+    return r
 }

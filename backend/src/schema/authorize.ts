@@ -35,6 +35,6 @@ export interface JsonWebTokenPayload {
 }
 
 export interface Permission {
-    permission: string
-    arguments: Record<string, unknown>
+    name: string
+    args: Record<string, unknown>
 }

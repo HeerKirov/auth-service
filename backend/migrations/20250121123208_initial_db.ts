@@ -4,9 +4,9 @@ import type { Knex } from "knex"
 export async function up(knex: Knex): Promise<void> {
     await knex.schema.createTable("user", (table) => {
         table.increments("id").primary()
-        table.string("username").notNullable()
-        table.string("password").notNullable()
-        table.string("displayName").notNullable()
+        table.string("username", 128).notNullable()
+        table.string("password", 128).notNullable()
+        table.string("displayName", 128).notNullable()
         table.string("avatar").defaultTo(null)
         table.boolean("enabled").notNullable().defaultTo(true)
         table.boolean("deleted").notNullable().defaultTo(false)
@@ -18,7 +18,7 @@ export async function up(knex: Knex): Promise<void> {
         table.increments("id").primary()
         table.integer("userId").notNullable()
         table.integer("appId").notNullable()
-        table.string("token").notNullable()
+        table.string("token", 128).notNullable()
         table.timestamp("createTime").notNullable()
         table.timestamp("expireTime").notNullable()
         table.timestamp("lastRefreshTime").notNullable()
@@ -26,9 +26,9 @@ export async function up(knex: Knex): Promise<void> {
 
     await knex.schema.createTable("app", (table) => {
         table.increments("id").primary()
-        table.string("appId").notNullable()
-        table.string("appName").notNullable()
-        table.string("appSecret").notNullable()
+        table.string("appId", 128).notNullable()
+        table.string("appName", 128).notNullable()
+        table.string("appSecret", 128).notNullable()
         table.string("avatar").defaultTo(null)
         table.json("domains").notNullable()
         table.boolean("enabled").notNullable().defaultTo(true)
@@ -38,8 +38,8 @@ export async function up(knex: Knex): Promise<void> {
     await knex.schema.createTable("permission", (table) => {
         table.increments("id").primary()
         table.integer("appId").notNullable()
-        table.string("name").notNullable()
-        table.string("displayName").notNullable()
+        table.string("name", 128).notNullable()
+        table.string("displayName", 128).notNullable()
         table.timestamp("createTime").notNullable()
     })
 
