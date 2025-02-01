@@ -2,6 +2,8 @@ import { Context } from "koa"
 import { appFilter } from "@/schema/filters"
 import { appAdminCreateSchema, appAdminPatchSchema, appSchema, appSecretSchema } from "@/schema/app"
 import { countApps, createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
+import { ErrorCode, ServerError } from "@/utils/error"
+import config from "@/config"
 
 export async function listApps(ctx: Context) {
     const filter = appFilter.parse(ctx.request.query)
@@ -26,9 +28,7 @@ export async function postApp(ctx: Context) {
 export async function retrieveApp(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     ctx.response.body = appSchema.parse(app)
@@ -37,12 +37,14 @@ export async function retrieveApp(ctx: Context) {
 export async function patchApp(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     const form = appAdminPatchSchema.parse(ctx.request.body)
+
+    if(form.enabled === false && app.appId === config.app.appId) {
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot alter Auth-Service app's enabled to FALSE.")
+    }
 
     await setApp(app.id, form)
 
@@ -52,9 +54,9 @@ export async function patchApp(ctx: Context) {
 export async function deleteApp(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
+    }else if(app.appId === config.app.appId) {
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot delete Auth-Service app.")
     }
 
     await dropApp(app.id)
@@ -66,9 +68,7 @@ export async function deleteApp(ctx: Context) {
 export async function retrieveAppSecret(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     ctx.response.body = appSecretSchema.parse(app)
@@ -77,9 +77,7 @@ export async function retrieveAppSecret(ctx: Context) {
 export async function patchAppSecret(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     await regenerateAppSecret(app.id)

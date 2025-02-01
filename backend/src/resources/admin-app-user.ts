@@ -8,14 +8,13 @@ import { getUser } from "@/services/user"
 import { dropUserAppPermission, selectUserAppPermissions, upsertUserAppPermission } from "@/services/user-permission"
 import { countUserWithAppRelation, getUserAppRelation, selectUserWithAppRelation } from "@/services/user-app"
 import { getAppPermissionByName } from "@/services/app-permission"
+import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 export async function listAppUsers(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     const filter = offsetAndLimitFilter.parse(ctx.request.query)
@@ -30,7 +29,6 @@ export async function listAppUsers(ctx: Context) {
 
 export async function retrieveAppUser(ctx: Context) {
     const [user, userAppRelation] = await getDetail(ctx)
-    if(!user) return
 
     const permissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
 
@@ -39,7 +37,6 @@ export async function retrieveAppUser(ctx: Context) {
 
 export async function putAppUserPermissions(ctx: Context) {
     const [user, userAppRelation] = await getDetail(ctx)
-    if(!user) return
 
     const origin = await selectUserAppPermissions(user.id, userAppRelation.appId)
     const newPermissions = appUserPermissionSchema.parse(ctx.request.body)
@@ -89,29 +86,21 @@ export async function putAppUserPermissions(ctx: Context) {
 }
 
 
-async function getDetail(ctx: Context): Promise<[User, UserAppRelation] | [null, null]> {
+async function getDetail(ctx: Context): Promise<[User, UserAppRelation]> {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return [null, null]
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
     const user = await getUser(ctx.params.username)
     if(user === null) {
-        ctx.response.body = {message: "User Not Found"}
-        ctx.status = 404
-        return [null, null]
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
     }
     if(user.username === config.app.admin.username && app.appId === config.app.appId) {
-        ctx.response.status = 403
-        ctx.response.body = {message: "Cannot alter ADMIN user's permissions for Auth-Service self."}
-        return [null, null]
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot alter ADMIN user's permissions for Auth-Service self.")
     }
-    const userAppRelation = await getUserAppRelation(user.id)
-    if(userAppRelation === null || userAppRelation.appId !== app.id) {
-        ctx.response.body = {message: "UserAppRelation Not Found"}
-        ctx.status = 404
-        return [null, null]
+    const userAppRelation = await getUserAppRelation(user.id, app.id)
+    if(userAppRelation === null) {
+        throw new ServerError(404, ErrorCode.NotFound, "UserAppRelation not found")
     }
 
     return [user, userAppRelation]

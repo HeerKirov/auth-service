@@ -6,6 +6,7 @@ import { getApp } from "@/services/app"
 import { createAccessToken, createRefreshToken } from "@/services/token"
 import { createAuthorizationCode, validateAuthorizationCode } from "@/services/authorization-code"
 import { isValidRedirectURI } from "@/utils/url"
+import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 /**
@@ -17,9 +18,7 @@ export async function login(ctx: Context) {
 
     const user = await compareUser(form.username, form.password)
     if(user === null) {
-        ctx.status = 401
-        ctx.response.body = {message: "Invalid username or password"}
-        return
+        throw new ServerError(401, ErrorCode.InvalidUsernameOrPassword, "Invalid username or password")
     }
 
     await tokenForThisApp(ctx, user)
@@ -45,20 +44,22 @@ export async function register(ctx: Context) {
 export async function authorize(ctx: Context) {
     const form = authorizeSchema.parse(ctx.request.body)
 
+    const state: State = ctx.state
+    const user = await state.getUser()
+    if(!user.enabled) {
+        throw new ServerError(403, ErrorCode.DisabledUser, "User is disabled")
+    }
+
     const targetApp = await getApp(form.appId)
     if(targetApp === null) {
-        ctx.status = 404
-        ctx.response.body = {message: "App Not Found"}
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
+    }else if(!targetApp.enabled) {
+        throw new ServerError(403, ErrorCode.DisabledApp, "App is disabled")
     }
 
     if(!isValidRedirectURI(form.redirectURI, targetApp.domains)) {
-        ctx.status = 403
-        ctx.response.body = {message: "Invalid Redirect URI"}
-        return
+        throw new ServerError(403, ErrorCode.InvalidRedirectURI, "Invalid redirect URI")
     }
-
-    const state: State = ctx.state
 
     ctx.response.body = {
         authorizationCode: createAuthorizationCode(state.username, targetApp.appId)
@@ -75,29 +76,23 @@ export async function verify(ctx: Context) {
 
     const targetApp = await getApp(form.appId)
     if(targetApp === null) {
-        ctx.status = 404
-        ctx.response.body = {message: "App Not Found"}
-        return
-    }
-
-    if(targetApp.appSecret !== form.appSecret) {
-        ctx.status = 403
-        ctx.response.body = {message: "Invalid App Secret"}
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
+    }else if(targetApp.appSecret !== form.appSecret) {
+        throw new ServerError(403, ErrorCode.InvalidAppSecret, "Invalid App Secret")
+    }else if(!targetApp.enabled) {
+        throw new ServerError(403, ErrorCode.DisabledApp, "App is disabled")
     }
 
     const username = validateAuthorizationCode(form.authorizationCode, targetApp.appId)
     if(username === null) {
-        ctx.status = 403
-        ctx.response.body = {message: "Authorization code is not valid or expired"}
-        return
+        throw new ServerError(403, ErrorCode.InvalidAuthorizationCode, "Authorization code is not valid or expired")
     }
 
     const user = await getUser(username)
     if(user === null) {
-        ctx.status = 403
-        ctx.response.body = {message: "User is not valid"}
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
+    }else if(!user.enabled) {
+        throw new ServerError(403, ErrorCode.DisabledUser, "User is disabled")
     }
 
     const refreshToken = (await createRefreshToken(user, targetApp)).token
@@ -122,6 +117,16 @@ export async function token(ctx: Context) {
 
     ctx.response.body = {accessToken}
     ctx.response.status = 201
+}
+
+/**
+ * 登出。实际作用是移除cookie中的token。
+ */
+export async function logout(ctx: Context) {
+    ctx.cookies.set("token")
+
+    ctx.response.body = {success: true}
+    ctx.response.status = 204
 }
 
 async function tokenForThisApp(ctx: Context, user: User) {

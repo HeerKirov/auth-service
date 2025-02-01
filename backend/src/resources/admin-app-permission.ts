@@ -3,13 +3,12 @@ import { offsetAndLimitFilter } from "@/schema/filters"
 import { AppPermission, permissionCreateSchema, permissionSchema, permissionUpdateSchema } from "@/schema/app-permission"
 import { countAppPermissions, createAppPermission, dropAppPermission, getAppPermission, selectAppPermissions, setAppPermission } from "@/services/app-permission"
 import { getApp } from "@/services/app"
+import { ErrorCode, ServerError } from "@/utils/error"
 
 export async function listAppPermissions(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     const filter = offsetAndLimitFilter.parse(ctx.request.query)
@@ -25,9 +24,7 @@ export async function listAppPermissions(ctx: Context) {
 export async function postAppPermission(ctx: Context) {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
 
     const form = permissionCreateSchema.parse(ctx.request.body)
@@ -40,7 +37,6 @@ export async function postAppPermission(ctx: Context) {
 
 export async function patchAppPermission(ctx: Context) {
     const appPermission = await getDetail(ctx)
-    if(!appPermission) return
 
     const form = permissionUpdateSchema.parse(ctx.request.body)
 
@@ -51,7 +47,6 @@ export async function patchAppPermission(ctx: Context) {
 
 export async function deleteAppPermission(ctx: Context) {
     const appPermission = await getDetail(ctx)
-    if(!appPermission) return
 
     await dropAppPermission(appPermission.id)
 
@@ -59,18 +54,14 @@ export async function deleteAppPermission(ctx: Context) {
     ctx.response.status = 204
 }
 
-async function getDetail(ctx: Context): Promise<AppPermission | null> {
+async function getDetail(ctx: Context): Promise<AppPermission> {
     const app = await getApp(ctx.params.appId)
     if(app === null) {
-        ctx.response.body = {message: "App Not Found"}
-        ctx.status = 404
-        return null
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
     }
     const appPermission = await getAppPermission(ctx.params.id)
     if(appPermission === null || appPermission.appId !== app.id) {
-        ctx.response.body = {message: "AppPermission Not Found"}
-        ctx.status = 404
-        return null
+        throw new ServerError(404, ErrorCode.NotFound, "AppPermission not found")
     }
     return appPermission
 }

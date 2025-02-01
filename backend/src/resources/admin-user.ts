@@ -1,7 +1,9 @@
 import { Context } from "koa"
 import { userFilter } from "@/schema/filters"
-import { userAdminChangePasswordSchema, userCreateSchema, userPatchSchema, userSchema } from "@/schema/user"
+import { userAdminChangePasswordSchema, userAdminPatchSchema, userCreateSchema, userSchema } from "@/schema/user"
 import { countUsers, createUser, getUser, getUserById, selectUsers, setUser, setUserDeleted } from "@/services/user"
+import { ErrorCode, ServerError } from "@/utils/error"
+import config from "@/config"
 
 export async function listUsers(ctx: Context) {
     const filter = userFilter.parse(ctx.request.query)
@@ -26,9 +28,7 @@ export async function postUser(ctx: Context) {
 export async function retrieveUser(ctx: Context) {
     const user = await getUser(ctx.params.username)
     if(user === null) {
-        ctx.response.body = {message: "User Not Found"}
-        ctx.response.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
     }
 
     ctx.response.body = userSchema.parse(user)
@@ -37,12 +37,14 @@ export async function retrieveUser(ctx: Context) {
 export async function patchUser(ctx: Context) {
     const user = await getUser(ctx.params.username)
     if(user === null) {
-        ctx.response.body = {message: "User Not Found"}
-        ctx.response.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
     }
 
-    const form = userPatchSchema.parse(ctx.request.body)
+    const form = userAdminPatchSchema.parse(ctx.request.body)
+
+    if(form.enabled === false && user.username === config.app.admin.username) {
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot alter ADMIN user's enabled to FALSE.")
+    }
 
     await setUser(user.id, form)
 
@@ -52,9 +54,9 @@ export async function patchUser(ctx: Context) {
 export async function deleteUser(ctx: Context) {
     const user = await getUser(ctx.params.username)
     if(user === null) {
-        ctx.response.body = {message: "User Not Found"}
-        ctx.response.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
+    }else if(user.username === config.app.admin.username) {
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot delete ADMIN user.")
     }
 
     await setUserDeleted(user.id, true)
@@ -66,9 +68,7 @@ export async function deleteUser(ctx: Context) {
 export async function patchUserPassword(ctx: Context) {
     const user = await getUser(ctx.params.username)
     if(user === null) {
-        ctx.response.body = {message: "User Not Found"}
-        ctx.response.status = 404
-        return
+        throw new ServerError(404, ErrorCode.NotFound, "User not found")
     }
 
     const form = userAdminChangePasswordSchema.parse(ctx.request.body)

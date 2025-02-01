@@ -1,5 +1,6 @@
 import { Context, Next } from "koa"
 import { State } from "@/schema/authorize"
+import { ErrorCode, ServerError } from "@/utils/error"
 
 export async function permission(ctx: Context, next: Next) {
     //访问任何/admin/users的API都要求ADMIN权限
@@ -7,9 +8,7 @@ export async function permission(ctx: Context, next: Next) {
         const state: State = ctx.state
         const permissions = await state.getPermissions()
         if(!permissions.some(p => p.name === "ADMIN")) {
-            ctx.status = 403
-            ctx.response.body = {message: "Forbidden"}
-            return
+            throw new ServerError(403, ErrorCode.Forbidden, "Forbidden")
         }
     }
 
@@ -22,9 +21,7 @@ export async function permission(ctx: Context, next: Next) {
         }else{
             const matcher = ctx.path.match(/^\/admin\/apps\/(?<appId>[^\/]+)(\/(?<sub>permissions|users))?/)
             if(!matcher) {
-                ctx.status = 403
-                ctx.response.body = {message: "Forbidden"}
-                return
+                throw new ServerError(403, ErrorCode.Forbidden, "Forbidden")
             }
             const appId = matcher.groups!["appId"]
             const sub = matcher.groups!["sub"]
@@ -32,14 +29,10 @@ export async function permission(ctx: Context, next: Next) {
                 if(permissions.some(p => p.name === "ADMIN" || (p.name === "APP_ADMIN" && p.args["appId"] === appId))) {
                     //continue
                 }else{
-                    ctx.status = 403
-                    ctx.response.body = {message: "You are not APP_ADMIN of this app"}
-                    return
+                    throw new ServerError(403, ErrorCode.Forbidden, "You are not APP_ADMIN of this app")
                 }
             }else{
-                ctx.status = 403
-                ctx.response.body = {message: "You are not Admin of this app"}
-                return
+                throw new ServerError(403, ErrorCode.Forbidden, "You are not Admin of this app")
             }
         }
     }

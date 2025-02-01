@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { userAppRelationSchema } from "@/schema/user-app";
 
 export const userCreateSchema = z.object({
     username: z.string().max(128),
@@ -10,6 +11,12 @@ export const userCreateSchema = z.object({
 export const userPatchSchema = z.object({
     displayName: z.string().max(128).optional(),
     avatar: z.string().nullable().optional(),
+})
+
+export const userInAppPatchSchema = z.object({
+    displayName: z.string().max(128).optional(),
+    avatar: z.string().nullable().optional(),
+    fields: z.record(z.string(), z.any()).optional()
 })
 
 export const userChangePasswordSchema = z.object({
@@ -35,6 +42,11 @@ export const userSchema = z.object({
     createTime: z.date(),
     lastRefreshTime: z.date().nullable(),
 })
+
+export const userInAppSchema = z.object({
+    user: userSchema,
+    userAppRelation: userAppRelationSchema,
+}).transform(({ user, userAppRelation }) => ({...user, userAppRelation,}))
 
 export interface User {
     id: number

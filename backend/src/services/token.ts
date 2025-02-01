@@ -43,19 +43,15 @@ export async function getRefreshToken(token: string): Promise<RefreshToken | nul
     return (await db.from<RefreshToken>("refresh_token").where({"token": token}).first()) ?? null
 }
 
-export async function flushRefreshTokenIfNecessary(record: RefreshToken): Promise<RefreshToken> {
-    const now = Date.now()
-    if(record.lastRefreshTime.getTime() - now > 1000 * 60 * 60 * 24) {
-        const expireTime = new Date(now + 1000 * 60 * 60 * 24 * 7)
-        const lastRefreshTime = new Date(now)
+export async function flushRefreshToken(record: RefreshToken, now: number): Promise<RefreshToken> {
+    const expireTime = new Date(now + 1000 * 60 * 60 * 24 * 7)
+    const lastRefreshTime = new Date(now)
 
-        await db.from<RefreshToken>("refresh_token").where({id: record.id}).update({expireTime, lastRefreshTime})
-        await flushUserRefreshTime(record.userId, lastRefreshTime)
-        await createOrFlushUserAppRelation(record.userId, record.appId, lastRefreshTime)
+    await db.from<RefreshToken>("refresh_token").where({id: record.id}).update({expireTime, lastRefreshTime})
+    await flushUserRefreshTime(record.userId, lastRefreshTime)
+    await createOrFlushUserAppRelation(record.userId, record.appId, lastRefreshTime)
 
-        return {...record, expireTime, lastRefreshTime}
-    }
-    return record
+    return {...record, expireTime, lastRefreshTime}
 }
 
 export async function deleteRefreshToken(record: RefreshToken): Promise<void> {

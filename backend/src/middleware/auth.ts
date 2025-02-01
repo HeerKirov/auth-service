@@ -4,9 +4,10 @@ import { App } from "@/schema/app"
 import { User } from "@/schema/user"
 import { JsonWebTokenPayload, State } from "@/schema/authorize"
 import { compareUser, getUser, getUserById } from "@/services/user"
-import { deleteRefreshToken, flushRefreshTokenIfNecessary, getRefreshToken } from "@/services/token"
+import { deleteRefreshToken, flushRefreshToken, getRefreshToken } from "@/services/token"
 import { getApp, getAppById } from "@/services/app"
 import { selectUserAppPermissions } from "@/services/user-permission"
+import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 export async function auth(ctx: Context, next: Next) {
@@ -21,53 +22,33 @@ export async function auth(ctx: Context, next: Next) {
     if (path === "/authorize") {
         const authType = analyseAuthType(ctx, { basic: true, refreshToken: true })
         if(authType.type === "Basic") {
-            const state = verifyBasicAuth(authType.username, authType.password)
-            if (state) {
-                ctx.state = state
-                return await next()
-            }
+            ctx.state = verifyBasicAuth(authType.username, authType.password)
+            return await next()
         }else if(authType.type === "Bearer") {
-            const state = await verifyRefreshToken(authType.token, true)
-            if (state) {
-                ctx.state = state
-                return await next()
-            }
+            ctx.state = await verifyRefreshToken(authType.token, true, ctx)
+            return await next()
         }
-        ctx.status = 401
-        ctx.body = { message: "Unauthorized" }
-        return
+        throw new ServerError(401, ErrorCode.Unauthorized, "Unauthorized")
     }
 
     // 仅允许Refresh Token认证。允许其他app访问
-    if (path === "/token") {
+    if (path === "/token" || path === "/logout") {
         const authType = analyseAuthType(ctx, { refreshToken: true })
         if (authType.type === "Bearer") {
-            const state = await verifyRefreshToken(authType.token, false)
-            if (state) {
-                ctx.state = state
-                return await next()
-            }
+            ctx.state = await verifyRefreshToken(authType.token, false, ctx)
+            return await next()
         }
-
-        ctx.status = 401
-        ctx.body = { message: "Unauthorized" }
-        return
+        throw new ServerError(401, ErrorCode.Unauthorized, "Unauthorized")
     }
 
-    // 一般JWT认证。除了/admin之外的path允许其他app访问
-    if (path.startsWith("/user/") || path.startsWith("/admin/")) {
+    // 一般JWT认证。其中/app/允许其他app访问
+    if (path.startsWith("/app/") || path.startsWith("/user/") || path.startsWith("/admin/")) {
         const authType = analyseAuthType(ctx, { accessToken: true })
         if (authType.type === "Bearer") {
-            const state = await verifyAccessToken(authType.token, path.startsWith("/admin/"))
-            if (state) {
-                ctx.state = state
-                return await next()
-            }
+            ctx.state = await verifyAccessToken(authType.token, !path.startsWith("/app/"))
+            return await next()
         }
-
-        ctx.status = 401
-        ctx.body = { message: "Unauthorized" }
-        return
+        throw new ServerError(401, ErrorCode.Unauthorized, "Unauthorized")
     }
 
     // 其他路径跳过认证
@@ -94,9 +75,11 @@ function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {ba
     return {type: "Unauthorized" as const}
 }
 
-async function verifyBasicAuth(username: string, password: string): Promise<State | null> {
+async function verifyBasicAuth(username: string, password: string): Promise<State> {
     const user = await compareUser(username, password)
-    if(user === null || !user.enabled) return null
+    if(user === null) {
+        throw new ServerError(401, ErrorCode.InvalidUsernameOrPassword, "Invalid username or password")
+    }
 
     const app = (await getApp(config.app.appId))!
 
@@ -116,29 +99,30 @@ async function verifyBasicAuth(username: string, password: string): Promise<Stat
     }
 }
 
-async function verifyRefreshToken(token: string, strict: boolean): Promise<State | null> {
+async function verifyRefreshToken(token: string, strict: boolean, ctx: Context): Promise<State> {
     const record = await getRefreshToken(token)
     if(record === null) {
-        return null
+        throw new ServerError(401, ErrorCode.Unauthorized, "Token not found")
     }
     if(record.expireTime.getTime() < Date.now()) {
         await deleteRefreshToken(record)
-        return null
+        throw new ServerError(401, ErrorCode.Unauthorized, "Token expired")
     }
 
     const [user, app] = await Promise.all([getUserById(record.userId), getAppById(record.appId)])
     if(user === null || app === null) {
-        return null
+        throw new ServerError(401, ErrorCode.Unauthorized, "User or app not found")
     }
     if(strict && app.appId !== config.app.appId) {
         //在strict=true的情况下，不允许来自其他app的refresh token进行认证，于是此时将返回
-        return null
-    }
-    if(!user.enabled || !app.enabled) {
-        return null
+        throw new ServerError(401, ErrorCode.Unauthorized, "Token is not used for this app")
     }
 
-    await flushRefreshTokenIfNecessary(record)
+    const now = Date.now()
+    if(record.lastRefreshTime.getTime() - now > 1000 * 60 * 60 * 24) {
+        const token = await flushRefreshToken(record, now)
+        ctx.cookies.set("token", token.token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 })
+    }
 
     let permissions: {name: string, args: Record<string, unknown>}[] | null = null
 
@@ -156,10 +140,10 @@ async function verifyRefreshToken(token: string, strict: boolean): Promise<State
     }
 }
 
-async function verifyAccessToken(token: string, strict: boolean): Promise<State | null> {
+async function verifyAccessToken(token: string, strict: boolean): Promise<State> {
     const decode = jwt.decode(token, { json: true })
     if(decode === null) {
-        return null
+        throw new ServerError(401, ErrorCode.Unauthorized, "Token cannot be decoded")
     }
     const { username, appId, permissions } = decode as JsonWebTokenPayload
 
@@ -170,9 +154,7 @@ async function verifyAccessToken(token: string, strict: boolean): Promise<State 
     if(appId !== config.app.appId && !strict) {
         //在strict=false的情况下，允许非auth service的、来自其他app的access token进行认证。于是此时需要查询对应app的secret
         app = await getApp(appId)
-        if(app === null || !app.enabled) {
-            return null
-        }
+        if(app === null) throw new ServerError(401, ErrorCode.Unauthorized, "App not found")
         secret = app.appSecret
     }else{
         secret = config.app.jwtSecret
@@ -181,9 +163,13 @@ async function verifyAccessToken(token: string, strict: boolean): Promise<State 
     try {
         jwt.verify(token, secret)
     }catch(e) {
-        if(e instanceof TokenExpiredError || e instanceof JsonWebTokenError || e instanceof NotBeforeError) {
-            return null
-        }else{
+        if(e instanceof TokenExpiredError) {
+            throw new ServerError(401, ErrorCode.Unauthorized, "Token expired")
+        } else if(e instanceof JsonWebTokenError) {
+            throw new ServerError(401, ErrorCode.Unauthorized, `Token decode error: ${e.message}`)
+        } else if(e instanceof NotBeforeError) {
+            throw new ServerError(401, ErrorCode.Unauthorized, "Token not before")
+        } else {
             throw e
         }
     }

@@ -1,6 +1,6 @@
 import Router from "@koa/router"
-import { login, register, authorize, verify, token } from "@/resources/authorize"
-import { getUserInfo, patchUserInfo, changeUserPassword } from "@/resources/user"
+import { login, register, authorize, verify, token, logout } from "@/resources/authorize"
+import { getUserInfo, patchUserInfo, changeUserPassword, getUserInfoInApp, patchUserInfoInApp } from "@/resources/user"
 import { deleteUser, listUsers, patchUser, patchUserPassword, postUser, retrieveUser } from "@/resources/admin-user"
 import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret } from "@/resources/admin-app"
 import { deleteAppPermission, listAppPermissions, patchAppPermission, postAppPermission } from "@/resources/admin-app-permission"
@@ -9,6 +9,7 @@ import { listAppUsers, putAppUserPermissions, retrieveAppUser } from "@/resource
 const router = new Router()
 
 router.post("/login", login)
+router.post("/logout", logout)
 router.post("/register", register)
 router.post("/authorize", authorize)
 router.post("/verify", verify)
@@ -17,6 +18,9 @@ router.post("/token", token)
 router.get("/user/info", getUserInfo)
 router.patch("/user/info", patchUserInfo)
 router.patch("/user/password", changeUserPassword)
+
+router.get("/app/user/info", getUserInfoInApp)
+router.patch("/app/user/info", patchUserInfoInApp)
 
 router.get("/admin/users", listUsers)
 router.post("/admin/users", postUser)

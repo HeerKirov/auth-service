@@ -27,8 +27,8 @@ export async function countUserWithAppRelation(appId: number): Promise<number> {
     return parseInt(<string>count)
 }
 
-export async function getUserAppRelation(userId: number): Promise<UserAppRelation | null> {
-    return (await db.first().from<UserAppRelation>("user_app_relation").where({userId})) ?? null
+export async function getUserAppRelation(userId: number, appId: number): Promise<UserAppRelation | null> {
+    return (await db.first().from<UserAppRelation>("user_app_relation").where({userId, appId})) ?? null
 }
 
 export async function createOrFlushUserAppRelation(userId: number, appId: number, now: Date): Promise<UserAppRelation> {
