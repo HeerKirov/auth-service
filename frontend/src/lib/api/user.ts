@@ -21,5 +21,6 @@ export interface UserPartialUpdateForm {
 }
 
 export interface UserPasswordUpdateForm {
+    oldPassword: string
     password: string
 }

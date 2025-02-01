@@ -3,7 +3,7 @@ import { LoginPage, RegisterPage } from "@/layouts"
 
 let mode: "login" | "register" = $state("login")
 
-const onLogin = () => window.location.href = "/"
+const onLogin = () => history.pushState({}, "", "/")
 
 const onClickRegister = () => mode = "register"
 

@@ -28,7 +28,7 @@ const getStyleOfColors = () => {
         }
     }else{
         switch (color) {
-            case "primary": return ["bg-transparent", "border-transparent", "text-indigo-600", "hover:border-indigo-600", "active:bg-slate-200", "dark:active:bg-neutral-700"]
+            case "primary": return ["bg-transparent", "border-transparent", "text-indigo-600", "dark:text-indigo-500", "hover:border-indigo-600", "active:bg-slate-200", "dark:active:bg-neutral-700"]
             case "secondary": return ["bg-transparent", "border-transparent", "text-zinc-400", "hover:border-zinc-400", "active:bg-slate-200", "dark:active:bg-neutral-700"]
             case "success": return ["bg-transparent", "border-transparent", "text-emerald-600", "hover:border-emerald-600", "active:bg-slate-200", "dark:active:bg-neutral-700"]
             case "info": return ["bg-transparent", "border-transparent", "text-sky-600", "hover:border-sky-600", "active:bg-slate-200", "dark:active:bg-neutral-700"]

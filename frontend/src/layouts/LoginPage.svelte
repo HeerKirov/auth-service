@@ -43,7 +43,7 @@ const login = async () => {
 <div class="central-page w-full">
     <p class="mb-2"><User class="mr-2"/><Input id="username" bind:value={username} onenter={focusPassword}/><User class="invisible"/></p>
     <p class="mb-2"><KeyRound class="mr-2"/><Input id="password" type="password" bind:value={password} onenter={login}/><KeyRound class="invisible"/></p>
-    {#if error}<p class="mb-2 text-red-700">{error}</p>{/if}
+    {#if error}<p class="mb-2 text-red-700 dark:text-red-400">{error}</p>{/if}
     <p>
         <Button mode="filled" color="success" onclick={login}><LogIn class="mr-1"/>登录</Button>
         {#if showRegisterButton}<Button mode="outline" color="info" onclick={onClickRegister}><Key class="mr-1"/>注册</Button>{/if}

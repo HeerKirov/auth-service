@@ -45,7 +45,7 @@ const register = async () => {
     <p class="mb-2"><UserPen class="mr-2"/><Input placeholder="名称" bind:value={displayName}/><User class="invisible"/></p>
     <p class="mb-2"><KeyRound class="mr-2"/><Input type="password" placeholder="密码" bind:value={password} onenter={register}/><KeyRound class="invisible"/></p>
     <p class="mb-2"><KeySquare class="mr-2"/><Input type="password" placeholder="确认密码" bind:value={checkPassword} onenter={register}/><KeyRound class="invisible"/></p>
-    {#if error}<p class="mb-2 text-red-700">{error}</p>{/if}
+    {#if error}<p class="mb-2 text-red-700 dark:text-red-400">{error}</p>{/if}
     <p>
         <Button mode="outline" color="info" onclick={register}><Check class="mr-1"/>注册</Button>
     </p>

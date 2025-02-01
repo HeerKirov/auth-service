@@ -58,11 +58,11 @@ onMount(async () => {
 {:else if mode === "authorize"}
     <div>
         <p><IdCard size={32}/></p>
-        {#if error}<p class="mt-2 text-red-700">{error}</p>{/if}
+        {#if error}<p class="mt-2 text-red-700 dark:text-red-400">{error}</p>{/if}
     </div>
 {:else}
     <div>
         <p><Loader size={32}/></p>
-        {#if error}<p class="mt-2 text-red-700">{error}</p>{/if}
+        {#if error}<p class="mt-2 text-red-700 dark:text-red-400">{error}</p>{/if}
     </div>
 {/if}
