@@ -4,24 +4,25 @@ import { RefreshToken } from "@/schema/token"
 import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
 import { UserAppPermission, UserAppRelation } from "@/schema/user-app"
 import { AppFilter } from "@/schema/filters"
+import { ListResult } from "@/schema/general"
 import { db } from "@/utils/db"
 import config from "@/config"
 
-export async function selectApps(filter: AppFilter): Promise<App[]> {
+export async function selectApps(filter: AppFilter): Promise<ListResult<App>> {
     const builder = db.from<App>("app").orderBy("createTime", "desc")
     if(filter.search) builder.where("appName", "ilike", `%${filter.search}%`).orWhere("appId", "ilike", `%${filter.search}%`)
     if(filter.enabled) builder.where("enabled", filter.enabled)
     if(filter.limit) builder.limit(filter.limit)
     if(filter.offset) builder.offset(filter.offset)
-    return builder
-}
+    const data = await builder
 
-export async function countApps(filter: AppFilter): Promise<number> {
-    const builder = db.from<App>("app")
-    if(filter.search) builder.where("appName", "ilike", `%${filter.search}%`).orWhere("appId", "ilike", `%${filter.search}%`)
-    if(filter.enabled) builder.where("enabled", filter.enabled)
-    const [{ count }] = await builder.count()
-    return parseInt(<string>count)
+    const cBuilder = db.from<App>("app")
+    if(filter.search) cBuilder.where("appName", "ilike", `%${filter.search}%`).orWhere("appId", "ilike", `%${filter.search}%`)
+    if(filter.enabled) cBuilder.where("enabled", filter.enabled)
+    const [{ count }] = await cBuilder.count()
+    const total = parseInt(<string>count)
+
+    return {total, data}
 }
 
 export async function createApp(app: AppCreateSchema): Promise<App> {
@@ -37,13 +38,15 @@ export async function createApp(app: AppCreateSchema): Promise<App> {
         "appId": app.appId,
         "appName": app.appName,
         "appSecret": appSecret,
+        "description": app.description ?? "",
+        "url": app.url ?? "",
         "avatar": app.avatar ?? null,
         "domains": JSON.stringify(app.domains) as any,
         "enabled": app.enabled,
         "createTime": createTime,
     }).returning("id")
 
-    return {id, appSecret, avatar: app.avatar ?? null, ...app, createTime}
+    return {id, appSecret, description: app.description ?? "", url: app.url ?? "", avatar: app.avatar ?? null, ...app, createTime}
 }
 
 export async function getApp(appId: string): Promise<App | null> {

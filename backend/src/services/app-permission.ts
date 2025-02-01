@@ -1,19 +1,20 @@
 import { AppPermission, PermissionCreateSchema, PermissionUpdateSchema } from "@/schema/app-permission"
 import { UserAppPermission } from "@/schema/user-app"
 import { OffsetAndLimitFilter } from "@/schema/filters"
+import { ListResult } from "@/schema/general"
 import { db } from "@/utils/db"
 
-export async function selectAppPermissions(appId: number, filter: OffsetAndLimitFilter): Promise<AppPermission[]> {
+export async function selectAppPermissions(appId: number, filter: OffsetAndLimitFilter): Promise<ListResult<AppPermission>> {
     const builder = db.from<AppPermission>("app_permission").where({appId}).orderBy("createTime", "ASC")
     if(filter.limit) builder.limit(filter.limit)
     if(filter.offset) builder.offset(filter.offset)
-    return builder
-}
+    const data = await builder
 
-export async function countAppPermissions(appId: number): Promise<number> {
-    const builder = db.from<AppPermission>("app_permission").where({appId})
-    const [{ count }] = await builder.count()
-    return parseInt(<string>count)
+    const cBuilder = db.from<AppPermission>("app_permission").where({appId})
+    const [{ count }] = await cBuilder.count()
+    const total = parseInt(<string>count)
+
+    return {total, data}
 }
 
 export async function createAppPermission(appId: number, p: PermissionCreateSchema): Promise<AppPermission> {

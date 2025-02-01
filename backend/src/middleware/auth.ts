@@ -42,7 +42,7 @@ export async function auth(ctx: Context, next: Next) {
     }
 
     // 一般JWT认证。其中/app/允许其他app访问
-    if (path.startsWith("/app/") || path.startsWith("/user/") || path.startsWith("/admin/")) {
+    if (path.startsWith("/app/") || path.startsWith("/my/") || path.startsWith("/admin/")) {
         const authType = analyseAuthType(ctx, { accessToken: true })
         if (authType.type === "Bearer") {
             ctx.state = await verifyAccessToken(authType.token, !path.startsWith("/app/"))

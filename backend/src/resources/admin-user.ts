@@ -1,18 +1,17 @@
 import { Context } from "koa"
 import { userFilter } from "@/schema/filters"
 import { userAdminChangePasswordSchema, userAdminPatchSchema, userCreateSchema, userSchema } from "@/schema/user"
-import { countUsers, createUser, getUser, getUserById, selectUsers, setUser, setUserDeleted } from "@/services/user"
+import { createUser, getUser, getUserById, selectUsers, setUser, setUserDeleted } from "@/services/user"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 export async function listUsers(ctx: Context) {
     const filter = userFilter.parse(ctx.request.query)
-    const result = await selectUsers(filter)
-    const total = await countUsers(filter)
+    const { total, data } = await selectUsers(filter)
 
     ctx.response.body = {
         total,
-        data: result.map(u => userSchema.parse(u))
+        data: data.map(u => userSchema.parse(u))
     }
 }
 

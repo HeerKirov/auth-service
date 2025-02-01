@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { userSchema } from "@/schema/user"
+import { appSchema } from "@/schema/app"
 
 export const userAppRelationSchema = z.object({
     fields: z.record(z.string(), z.any()),
@@ -18,6 +19,16 @@ export const adminAppUserSchema = z.object({
     userAppPermissions: appUserPermissionSchema.optional()
 }).transform(({ user, userAppRelation, userAppPermissions }) => ({
     ...user,
+    userAppRelation,
+    userAppPermissions
+}))
+
+export const myAppSchema = z.object({
+    app: appSchema,
+    userAppRelation: userAppRelationSchema,
+    userAppPermissions: appUserPermissionSchema.optional()
+}).transform(({ app, userAppRelation, userAppPermissions }) => ({
+    ...app,
     userAppRelation,
     userAppPermissions
 }))

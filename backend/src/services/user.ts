@@ -1,23 +1,24 @@
 import { compare, hash } from "bcrypt"
 import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
 import { UserFilter } from "@/schema/filters"
+import { ListResult } from "@/schema/general"
 import { db } from "@/utils/db"
 
-export async function selectUsers(filter: UserFilter): Promise<User[]> {
+export async function selectUsers(filter: UserFilter): Promise<ListResult<User>> {
     const builder = db.from<User>("user").orderBy("createTime", "desc")
     if(filter.search) builder.where("username", "ilike", `%${filter.search}%`).orWhere("displayName", "ilike", `%${filter.search}%`)
     if(filter.enabled) builder.where("enabled", filter.enabled)
     if(filter.limit) builder.limit(filter.limit)
     if(filter.offset) builder.offset(filter.offset)
-    return builder
-}
+    const data = await builder
 
-export async function countUsers(filter: UserFilter): Promise<number> {
-    const builder = db.from<User>("user")
-    if(filter.search) builder.where("username", "ilike", `%${filter.search}%`).orWhere("displayName", "ilike", `%${filter.search}%`)
-    if(filter.enabled) builder.where("enabled", filter.enabled)
-    const [{ count }] = await builder.count()
-    return parseInt(<string>count)
+    const cBuilder = db.from<User>("user")
+    if(filter.search) cBuilder.where("username", "ilike", `%${filter.search}%`).orWhere("displayName", "ilike", `%${filter.search}%`)
+    if(filter.enabled) cBuilder.where("enabled", filter.enabled)
+    const [{ count }] = await cBuilder.count()
+    const total = parseInt(<string>count)
+
+    return {total, data}
 }
 
 export async function createUser(user: UserCreateSchema): Promise<User> {

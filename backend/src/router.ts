@@ -1,5 +1,6 @@
 import Router from "@koa/router"
 import { login, register, authorize, verify, token, logout } from "@/resources/authorize"
+import { listMyApps, retrieveMyApp } from "@/resources/app"
 import { getUserInfo, patchUserInfo, changeUserPassword, getUserInfoInApp, patchUserInfoInApp } from "@/resources/user"
 import { deleteUser, listUsers, patchUser, patchUserPassword, postUser, retrieveUser } from "@/resources/admin-user"
 import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret } from "@/resources/admin-app"
@@ -15,9 +16,11 @@ router.post("/authorize", authorize)
 router.post("/verify", verify)
 router.post("/token", token)
 
-router.get("/user/info", getUserInfo)
-router.patch("/user/info", patchUserInfo)
-router.patch("/user/password", changeUserPassword)
+router.get("/my/user/info", getUserInfo)
+router.patch("/my/user/info", patchUserInfo)
+router.patch("/my/user/password", changeUserPassword)
+router.get("/my/apps", listMyApps)
+router.get("/my/apps/:appId", retrieveMyApp)
 
 router.get("/app/user/info", getUserInfoInApp)
 router.patch("/app/user/info", patchUserInfoInApp)

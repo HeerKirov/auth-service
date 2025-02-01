@@ -6,7 +6,7 @@ import { adminAppUserSchema, appUserPermissionSchema, UserAppRelation } from "@/
 import { getApp } from "@/services/app"
 import { getUser } from "@/services/user"
 import { dropUserAppPermission, selectUserAppPermissions, upsertUserAppPermission } from "@/services/user-permission"
-import { countUserWithAppRelation, getUserAppRelation, selectUserWithAppRelation } from "@/services/user-app"
+import { getUserAppRelation, selectUserWithAppRelation } from "@/services/user-app"
 import { getAppPermissionByName } from "@/services/app-permission"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
@@ -18,12 +18,11 @@ export async function listAppUsers(ctx: Context) {
     }
 
     const filter = offsetAndLimitFilter.parse(ctx.request.query)
-    const result = await selectUserWithAppRelation(app.id, filter)
-    const total = await countUserWithAppRelation(app.id)
+    const { total, data } = await selectUserWithAppRelation(app.id, filter)
 
     ctx.response.body = {
         total,
-        data: result.map(a => adminAppUserSchema.parse(a))
+        data: data.map(a => adminAppUserSchema.parse(a))
     }
 }
 

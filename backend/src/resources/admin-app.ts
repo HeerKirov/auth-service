@@ -1,18 +1,17 @@
 import { Context } from "koa"
 import { appFilter } from "@/schema/filters"
 import { appAdminCreateSchema, appAdminPatchSchema, appSchema, appSecretSchema } from "@/schema/app"
-import { countApps, createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
+import { createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 export async function listApps(ctx: Context) {
     const filter = appFilter.parse(ctx.request.query)
-    const result = await selectApps(filter)
-    const total = await countApps(filter)
+    const { total, data } = await selectApps(filter)
 
     ctx.response.body = {
         total,
-        data: result.map(a => appSchema.parse(a))
+        data: data.map(a => appSchema.parse(a))
     }
 }
 

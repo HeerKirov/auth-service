@@ -1,7 +1,7 @@
 import { Context } from "koa"
 import { offsetAndLimitFilter } from "@/schema/filters"
 import { AppPermission, permissionCreateSchema, permissionSchema, permissionUpdateSchema } from "@/schema/app-permission"
-import { countAppPermissions, createAppPermission, dropAppPermission, getAppPermission, selectAppPermissions, setAppPermission } from "@/services/app-permission"
+import { createAppPermission, dropAppPermission, getAppPermission, selectAppPermissions, setAppPermission } from "@/services/app-permission"
 import { getApp } from "@/services/app"
 import { ErrorCode, ServerError } from "@/utils/error"
 
@@ -12,12 +12,11 @@ export async function listAppPermissions(ctx: Context) {
     }
 
     const filter = offsetAndLimitFilter.parse(ctx.request.query)
-    const result = await selectAppPermissions(app.id, filter)
-    const total = await countAppPermissions(app.id)
+    const { total, data } = await selectAppPermissions(app.id, filter)
 
     ctx.response.body = {
         total,
-        data: result.map(a => permissionSchema.parse(a))
+        data: data.map(a => permissionSchema.parse(a))
     }
 }
 
