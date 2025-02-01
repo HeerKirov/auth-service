@@ -1,9 +1,10 @@
 <script lang="ts">
 import type { HTMLButtonAttributes } from "svelte/elements"
 
-let { mode = "transparent", color = "primary", children, ...attrs }: HTMLButtonAttributes & {
-    mode?: "transparent" | "outline" | "filled"
+let { mode = "transparent", color = "primary", square = false, children, ...attrs }: HTMLButtonAttributes & {
+    mode?: "transparent" | "outline" | "filled" | "underline"
     color?: "primary" | "secondary" | "success" | "info" | "warning" | "danger"
+    square?: boolean
 } = $props()
 
 const getStyleOfColors = () => {
@@ -37,7 +38,23 @@ const getStyleOfColors = () => {
     }
 }
 
-let cls = $derived([attrs["class"], ...getStyleOfColors()])
+const getStyleOrBorder = () => {
+    if(mode === "underline") {
+        return ["border-b-2"]
+    }else{
+        return ["border-2", "rounded-lg"]
+    }
+}
+
+const getStyleOfPadding = () => {
+    if(square || mode === "underline") {
+        return ["p-[0.3em]"]
+    }else{
+        return ["py-[0.3em] px-[0.6em]"]
+    }
+}
+
+let cls = $derived([attrs["class"], square && "square", ...getStyleOfPadding(), ...getStyleOrBorder(), ...getStyleOfColors()])
 
 </script>
 
@@ -47,14 +64,13 @@ let cls = $derived([attrs["class"], ...getStyleOfColors()])
 
 <style>
     button {
-        border-width: 2px;
-        border-style: solid;
-        border-radius: 8px;
-        padding: 0.3em 0.3em;
         font-size: 1em;
         font-weight: 500;
         font-family: inherit;
         cursor: pointer;
         transition: border-color 0.25s, background-color 0.25s;
+    }
+    button.square :global(svg) {
+        display: block;
     }
 </style>

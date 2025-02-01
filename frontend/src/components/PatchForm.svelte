@@ -43,9 +43,9 @@ const save = async () => {
 <div {...attrs}>
     {#if editMode}
         {@render editSnippet?.(editValue!, setEditValue, save)}
-        <Button class="absolute ml-1" onclick={save}><Check size={20}/></Button>
+        <Button class="absolute ml-1" square onclick={save}><Check size={20}/></Button>
     {:else}
         {@render defaultSnippet?.(value, edit)}
-        <Button class="absolute ml-1" onclick={edit}><Pencil size={20}/></Button>
+        <Button class="absolute ml-1" square onclick={edit}><Pencil size={20}/></Button>
     {/if}
 </div>

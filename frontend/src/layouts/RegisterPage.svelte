@@ -1,7 +1,8 @@
 <script lang="ts">
-import { Check, KeyRound, User, UserPen } from "lucide-svelte"
+import { Check, KeyRound, KeySquare, User, UserPen } from "lucide-svelte"
 import { Button, Input } from "@/components"
 import { auth } from "@/lib/api"
+import { setAccessToken } from "@/lib/store/user.svelte"
 
 let { onRegistered }: {
     onRegistered?: (username: string) => void
@@ -29,7 +30,7 @@ const register = async () => {
     }
     const r = await auth.register({username: username.trim(), password, displayName: displayName.trim(), avatar: null})
     if(r.ok) {
-        sessionStorage.setItem("access-token", r.data.accessToken)
+        setAccessToken(r.data.accessToken)
         onRegistered?.(username)
     }else{
         error = r.message
@@ -39,13 +40,13 @@ const register = async () => {
 
 </script>
 
-<div>
-    <p class="mb-2"><User class="inline mr-2"/><Input placeholder="用户ID" bind:value={username}/><User class="inline invisible"/></p>
-    <p class="mb-2"><UserPen class="inline mr-2"/><Input placeholder="名称" bind:value={displayName}/><User class="inline invisible"/></p>
-    <p class="mb-2"><KeyRound class="inline mr-2"/><Input type="password" placeholder="密码" bind:value={password} onenter={register}/><KeyRound class="inline invisible"/></p>
-    <p class="mb-2"><KeyRound class="inline mr-2"/><Input type="password" placeholder="确认密码" bind:value={checkPassword} onenter={register}/><KeyRound class="inline invisible"/></p>
+<div class="central-page w-full">
+    <p class="mb-2"><User class="mr-2"/><Input placeholder="用户ID" bind:value={username}/><User class="invisible"/></p>
+    <p class="mb-2"><UserPen class="mr-2"/><Input placeholder="名称" bind:value={displayName}/><User class="invisible"/></p>
+    <p class="mb-2"><KeyRound class="mr-2"/><Input type="password" placeholder="密码" bind:value={password} onenter={register}/><KeyRound class="invisible"/></p>
+    <p class="mb-2"><KeySquare class="mr-2"/><Input type="password" placeholder="确认密码" bind:value={checkPassword} onenter={register}/><KeyRound class="invisible"/></p>
     {#if error}<p class="mb-2 text-red-700">{error}</p>{/if}
     <p>
-        <Button mode="outline" color="info" onclick={register}><Check class="inline mr-1"/>注册</Button>
+        <Button mode="outline" color="info" onclick={register}><Check class="mr-1"/>注册</Button>
     </p>
 </div>

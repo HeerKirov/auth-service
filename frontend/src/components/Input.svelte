@@ -44,7 +44,7 @@ const getStyleOfColors = () => {
         case "info": return ["border-sky-600", "focus:border-sky-400"]
         case "warning": return ["border-yellow-600", "focus:border-yellow-400"]
         case "danger": return ["border-red-600", "focus:border-red-400"]
-        default: return ["border-slate-700", "focus:border-slate-500", "dark:border-neutral-300", "dark:focus:border-neutral-50"]
+        default: return ["border-slate-700", "focus:border-slate-900", "dark:border-neutral-300", "dark:focus:border-neutral-50"]
     }
 }
 

@@ -17,18 +17,20 @@ const doAuthorize = async () => {
     mode = "authorize"
     const r = await auth.authorize({appId, redirectURI})
     if(r.ok) {
+        const ai = encodeURIComponent(appId)
         const ac = encodeURIComponent(r.data.authorizationCode)
         const state = st ? encodeURIComponent(st) : ""
-        window.location.replace(`${redirectURI}?&authorizationCode=${ac}&state=${state}`)
-    }else if(r.status === 404) {
+        window.location.replace(`${redirectURI}?appId=${ai}&authorizationCode=${ac}&state=${state}`)
+    }else if(r.error === "NOT_FOUND") {
         error = "非法认证：未授权的应用程序。"
-        return
-    }else if(r.status === 403) {
+    }else if(r.error === "INVALID_REDIRECT_URI") {
         error = "非法认证：未授权的URI。"
-        return
+    }else if(r.error === "DISABLED_USER") {
+        error = "被阻止的认证：用户已被禁用。"
+    }else if(r.error === "DISABLED_APP") {
+        error = "被阻止的认证：App已被禁用。"
     }else{
         error = r.message
-        return
     }
 }
 
@@ -55,12 +57,12 @@ onMount(async () => {
     <RegisterPage onRegistered={doAuthorize}/>
 {:else if mode === "authorize"}
     <div>
-        <p><IdCard size={32} class="inline"/></p>
+        <p><IdCard size={32}/></p>
         {#if error}<p class="mt-2 text-red-700">{error}</p>{/if}
     </div>
 {:else}
     <div>
-        <p><Loader size={32} class="inline"/></p>
+        <p><Loader size={32}/></p>
         {#if error}<p class="mt-2 text-red-700">{error}</p>{/if}
     </div>
 {/if}

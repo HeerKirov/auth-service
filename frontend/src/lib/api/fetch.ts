@@ -1,6 +1,7 @@
 import { jwtDecode } from "jwt-decode"
+import { getAccessToken, setAccessToken } from "@/lib/store/user.svelte";
 
-export async function fetchRequest<T, E = undefined>(url: string, init?: RequestConfig): Promise<IResponse<T, E>> {
+export async function fetchRequest<T, E extends string | undefined = undefined>(url: string, init?: RequestConfig): Promise<IResponse<T, E | undefined>> {
     const { authorization = true, ...config } = init ?? {}
     const headers: Record<string, string> = {"content-type": "application/json"}
 
@@ -15,7 +16,8 @@ export async function fetchRequest<T, E = undefined>(url: string, init?: Request
         ...config
     })
     if(response.ok) {
-        return {ok: true, data: await response.json()}
+        const data = response.status === 204 ? {} : await response.json()
+        return {ok: true, data}
     }else{
         const json = await response.json()
         return {ok: false, status: response.status, message: json["message"], error: json["error"]}
@@ -24,7 +26,7 @@ export async function fetchRequest<T, E = undefined>(url: string, init?: Request
 
 export async function preloadAuthorization(options?: {onlyRefreshToken: boolean}): Promise<IResponse<string, undefined>> {
     if(!options?.onlyRefreshToken) {
-        const accessToken: string | null = sessionStorage.getItem("access-token")
+        const accessToken: string | null = getAccessToken()
         if (accessToken) {
             const decode = jwtDecode(accessToken)
             if(decode.exp! * 1000 >= Date.now()) {
@@ -35,7 +37,7 @@ export async function preloadAuthorization(options?: {onlyRefreshToken: boolean}
 
     const r = await fetchRequest<{accessToken: string}>("/token", {method: "POST", authorization: false})
     if(r.ok) {
-        sessionStorage.setItem("access-token", r.data.accessToken)
+        setAccessToken(r.data.accessToken)
         return {ok: true, data: r.data.accessToken}
     }else{
         return {ok: false, status: r.status, message: r.message, error: r.error}
