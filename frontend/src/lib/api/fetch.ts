@@ -59,3 +59,8 @@ export interface ResponseError<E> {
     error: E
     message: string
 }
+
+export interface ListResult<T> {
+    total: number
+    data: T[]
+}

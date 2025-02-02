@@ -1,10 +1,10 @@
 import { fetchRequest } from "@/lib/api/fetch"
 
-export const getUserInfo = () => fetchRequest<User>("/user/info", {method: "GET"})
+export const getUserInfo = () => fetchRequest<User>("/my/user/info", {method: "GET"})
 
-export const patchUserInfo = (data: UserPartialUpdateForm) => fetchRequest<User>("/user/info", {method: "PATCH", body: JSON.stringify(data)})
+export const patchUserInfo = (data: UserPartialUpdateForm) => fetchRequest<User>("/my/user/info", {method: "PATCH", body: JSON.stringify(data)})
 
-export const patchUserPassword = (data: UserPasswordUpdateForm) => fetchRequest<User>("/user/password", {method: "PATCH", body: JSON.stringify(data)})
+export const patchUserPassword = (data: UserPasswordUpdateForm) => fetchRequest<User>("/my/user/password", {method: "PATCH", body: JSON.stringify(data)})
 
 export interface User {
     username: string
