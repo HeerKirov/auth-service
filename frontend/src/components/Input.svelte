@@ -1,8 +1,8 @@
 <script lang="ts">
-import type { HTMLInputAttributes } from "svelte/elements"
+    import type { FormEventHandler, HTMLInputAttributes, KeyboardEventHandler } from "svelte/elements"
 import { autoFocus } from "@/utils/action"
 
-let { value = $bindable(), setValue, autoFocus: isAutoFocus = false, color = "normal", onenter, onkeydown, ...attrs }: {
+let { value = $bindable(), setValue, autoFocus: isAutoFocus = false, color = "normal", onenter, onkeydown, oninput, ...attrs }: {
     value?: string
     setValue?: (newValue: string | undefined) => void
     onenter?: (e: KeyboardEvent) => void
@@ -10,35 +10,27 @@ let { value = $bindable(), setValue, autoFocus: isAutoFocus = false, color = "no
     autoFocus?: boolean
 } & HTMLInputAttributes = $props()
 
-let internalValue: string | undefined = $state(value)
-
-$effect(() => {
-    if(value !== internalValue) {
-        value = internalValue
-        if(setValue) setValue(internalValue)
-    }
-})
-
-$effect(() => {
-    if(internalValue !== value) {
-        internalValue = value
-    }
-})
-
-let keydown = $derived(onkeydown && onenter ? ((e: KeyboardEvent) => {
+let keydown: KeyboardEventHandler<HTMLInputElement> | null | undefined = $derived(onkeydown && onenter ? ((e) => {
     if(e.key === "Enter" && !e.altKey && !e.metaKey && !e.ctrlKey) {
         onenter!(e)
     }
-    onkeydown!(e as any)
-}) : onenter ? ((e: KeyboardEvent) => {
+    onkeydown!(e)
+}) : onenter ? ((e) => {
     if(e.key === "Enter" && !e.altKey && !e.metaKey && !e.ctrlKey) {
         onenter!(e)
     }
 }) : onkeydown)
 
+let input: FormEventHandler<HTMLInputElement> | null | undefined = $derived(oninput && setValue ? ((e) => {
+    setValue!((e.target as HTMLInputElement).value)
+    oninput!(e)
+}) : setValue ? ((e) => {
+    setValue!((e.target as HTMLInputElement).value)
+}) : oninput)
+
 const getStyleOfColors = () => {
     switch (color) {
-        case "primary": return ["border-indigo-600", "focus:border-indigo-400"]
+        case "primary": return ["border-indigo-600", "focus:border-indigo-400", "dark:border-indigo-500", "focus:border-indigo-300"]
         case "secondary": return ["border-zinc-400", "focus:border-indigo-300"]
         case "success": return ["border-emerald-600", "focus:border-emerald-400"]
         case "info": return ["border-sky-600", "focus:border-sky-400"]
@@ -52,7 +44,7 @@ let cls = $derived([attrs["class"], ...getStyleOfColors()])
 
 </script>
 
-<input bind:value={internalValue} use:autoFocus={isAutoFocus} class={cls} onkeydown={keydown} {...attrs}/>
+<input {...attrs} bind:value={value} use:autoFocus={isAutoFocus} class={cls} onkeydown={keydown} oninput={input}/>
 
 <style>
     input {
@@ -62,5 +54,15 @@ let cls = $derived([attrs["class"], ...getStyleOfColors()])
         padding: 0.15em 0.3em;
         outline: none;
         transition: border-color 0.25s;
+    }
+    input[type="number"] {
+        -moz-appearance: textfield; /* Firefox */
+        appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none; /* Safari */
+        margin: 0;
     }
 </style>

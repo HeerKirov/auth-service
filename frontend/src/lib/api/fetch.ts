@@ -2,8 +2,9 @@ import { jwtDecode } from "jwt-decode"
 import { getAccessToken, setAccessToken } from "@/lib/store/user.svelte";
 
 export async function fetchRequest<T, E extends string | undefined = undefined>(url: string, init?: RequestConfig): Promise<IResponse<T, E | undefined>> {
-    const { authorization = true, ...config } = init ?? {}
+    const { authorization = true, query, ...config } = init ?? {}
     const headers: Record<string, string> = {"content-type": "application/json"}
+    let input = `/api${url}`
 
     if(authorization) {
         const r = await preloadAuthorization()
@@ -11,7 +12,12 @@ export async function fetchRequest<T, E extends string | undefined = undefined>(
         headers["Authorization"] = `Bearer ${r.data}`
     }
 
-    const response = await fetch(`/api${url}`, {
+    if(query) {
+        const s = Object.entries(query).map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`).join("&")
+        if(s) input += `?${s}`
+    }
+
+    const response = await fetch(input, {
         headers: config.headers ? {...headers, ...config.headers} : headers,
         ...config
     })
@@ -44,7 +50,10 @@ export async function preloadAuthorization(options?: {onlyRefreshToken: boolean}
     }
 }
 
-type RequestConfig = RequestInit & {authorization?: boolean}
+type RequestConfig = RequestInit & {
+    authorization?: boolean
+    query?: Record<string, any>
+}
 
 export type IResponse<T, E> = ResponseOk<T> | ResponseError<E>
 
@@ -63,4 +72,9 @@ export interface ResponseError<E> {
 export interface ListResult<T> {
     total: number
     data: T[]
+}
+
+export interface OffsetAndLimitFilter {
+    offset?: number
+    limit?: number
 }

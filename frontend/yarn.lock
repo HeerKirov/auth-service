@@ -1046,6 +1046,11 @@ svelte-check@^4.1.1:
     picocolors "^1.0.0"
     sade "^1.7.4"
 
+svelte-transition@^0.0.17:
+  version "0.0.17"
+  resolved "https://registry.npmmirror.com/svelte-transition/-/svelte-transition-0.0.17.tgz#0a0597aac5bbea58fe0de5d3ec4ac1954a2fb06d"
+  integrity sha512-df3kJdJogRNDGiEwJSb7Pdk8/7ZTcQapHhtQ5VicaT/oUP/BNH5qR5Q3sKvptBvOD0uJSzjjMVC5oLwdgjUdRw==
+
 svelte@^5.15.0:
   version "5.19.3"
   resolved "https://registry.npmmirror.com/svelte/-/svelte-5.19.3.tgz#2e763bca74618f486e43bbe07034669ad9139c8b"

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "jwt-decode": "^4.0.0",
-    "lucide-svelte": "^0.474.0"
+    "lucide-svelte": "^0.474.0",
+    "svelte-transition": "^0.0.17"
   }
 }

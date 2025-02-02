@@ -63,7 +63,7 @@ const toggleManageMenu = () => isManageMenuOpen = !isManageMenuOpen
             <div class="mb-2 text-red-400"><ShieldBan size={20} class="mr-1"/>用户已被禁用</div>
         {/if}
         <div class="text-sm"><b class="select-none text-gray-500">注册时间</b> <span class="text-gray-400">{toDateString(userInfo.createTime)}</span></div>
-        <div class="text-sm"><b class="select-none text-gray-500">上次登录</b> <span class="text-gray-400">{toDateString(userInfo.lastRefreshTime)}</span></div>
+        <div class="text-sm"><b class="select-none text-gray-500">上次登录</b> <span class="text-gray-400">{userInfo.lastRefreshTime ? toDateString(userInfo.lastRefreshTime) : "XXXX-XX-XX"}</span></div>
         <div class="mt-4 text-sm flex flex-wrap items-baseline">
             <div class="basis-full md:basis-auto text-center">
                 <Button mode="underline" color="info" onclick={gotoApps}><LayoutPanelLeft size={18} class="mr-1"/>我的App</Button>

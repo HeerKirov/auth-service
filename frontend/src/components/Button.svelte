@@ -10,7 +10,7 @@ let { mode = "transparent", color = "primary", square = false, children, ...attr
 const getStyleOfColors = () => {
     if(mode === "filled") {
         switch (color) {
-            case "primary": return ["bg-indigo-600", "dark:bg-indigo-800", "text-slate-100", "border-transparent", "hover:bg-indigo-300", "dark:hover:bg-indigo-700", "active:!bg-indigo-900"]
+            case "primary": return ["bg-indigo-600", "dark:bg-indigo-800", "text-slate-100", "border-transparent", "hover:bg-indigo-300", "dark:hover:bg-indigo-600", "active:!bg-indigo-900"]
             case "secondary": return ["bg-zinc-400", "dark:bg-zinc-600", "text-slate-100", "border-transparent", "hover:bg-zinc-300", "dark:hover:bg-zinc-500", "active:!bg-zinc-700"]
             case "success": return ["bg-emerald-600", "dark:bg-emerald-800", "text-slate-100", "border-transparent", "hover:bg-emerald-300", "dark:hover:bg-emerald-700", "active:!bg-emerald-900"]
             case "info": return ["bg-sky-600", "dark:bg-sky-800", "text-slate-100", "border-transparent", "hover:bg-sky-300", "dark:hover:bg-sky-700", "active:!bg-sky-900"]
@@ -19,7 +19,7 @@ const getStyleOfColors = () => {
         }
     }else if(mode === "outline") {
         switch (color) {
-            case "primary": return ["bg-transparent", "text-indigo-600", "border-indigo-600", "hover:border-indigo-300", "dark:hover:border-indigo-700", "active:!border-indigo-800"]
+            case "primary": return ["bg-transparent", "text-indigo-600", "dark:text-indigo-500", "border-indigo-600", "dark:border-indigo-500", "hover:border-indigo-300", "dark:hover:border-indigo-500", "active:!border-indigo-800"]
             case "secondary": return ["bg-transparent", "text-zinc-400", "border-zinc-400", "hover:border-zinc-300", "dark:hover:border-zinc-500", "active:!border-zinc-700"]
             case "success": return ["bg-transparent", "text-emerald-600", "border-emerald-600", "hover:border-emerald-300", "dark:hover:border-emerald-700", "active:!border-emerald-800"]
             case "info": return ["bg-transparent", "text-sky-600", "border-sky-600", "hover:border-sky-300", "dark:hover:border-sky-700", "active:!border-sky-800"]

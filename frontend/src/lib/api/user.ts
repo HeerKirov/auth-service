@@ -12,7 +12,7 @@ export interface User {
     avatar: string | null
     enabled: boolean
     createTime: string
-    lastRefreshTime: string
+    lastRefreshTime: string | null
 }
 
 export interface UserPartialUpdateForm {
