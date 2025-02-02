@@ -2,7 +2,7 @@ import { Context } from "koa"
 import { isDeepStrictEqual } from 'util'
 import { User } from "@/schema/user"
 import { offsetAndLimitFilter } from "@/schema/filters"
-import { adminAppUserSchema, appUserPermissionSchema, UserAppRelation } from "@/schema/user-app"
+import { adminUserInAppSchema, permissionArgumentsSchema, UserAppRelation } from "@/schema/user-app"
 import { getApp } from "@/services/app"
 import { getUser } from "@/services/user"
 import { dropUserAppPermission, selectUserAppPermissions, upsertUserAppPermission } from "@/services/user-permission"
@@ -22,23 +22,23 @@ export async function listAppUsers(ctx: Context) {
 
     ctx.response.body = {
         total,
-        data: data.map(a => adminAppUserSchema.parse(a))
+        data: data.map(a => adminUserInAppSchema.parse(a))
     }
 }
 
 export async function retrieveAppUser(ctx: Context) {
     const [user, userAppRelation] = await getDetail(ctx)
 
-    const permissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
+    const userAppPermissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
 
-    ctx.response.body = adminAppUserSchema.parse({user, userAppRelation, userAppPermissions: permissions})
+    ctx.response.body = adminUserInAppSchema.parse({user, userAppRelation, userAppPermissions})
 }
 
 export async function putAppUserPermissions(ctx: Context) {
     const [user, userAppRelation] = await getDetail(ctx)
 
     const origin = await selectUserAppPermissions(user.id, userAppRelation.appId)
-    const newPermissions = appUserPermissionSchema.parse(ctx.request.body)
+    const newPermissions = permissionArgumentsSchema.parse(ctx.request.body)
 
     const upsert: [number, Record<string, unknown>][] = []
     const remove: number[] = []
@@ -61,27 +61,21 @@ export async function putAppUserPermissions(ctx: Context) {
                 return
             }
         }
-        const exist = origin.find(i => i.name === form.name)
-        if(exist === undefined || !isDeepStrictEqual(exist.args, form.args)) {
+        const exist = origin.find(i => i.appPermission.name === form.name)
+        if(exist === undefined || !isDeepStrictEqual(exist.userAppPermission.arguments, form.args)) {
             upsert.push([permission.id, form.args])
         }
     }
     for(const old of origin) {
-        if(!newPermissions.some(j => j.name === old.name)) {
-            const permission = await getAppPermissionByName(userAppRelation.appId, old.name)
-            if(permission === null) {
-                ctx.response.status = 500
-                ctx.response.body = {message: `Permission '${old.name}' not found`}
-                return
-            }
-            remove.push(permission.id)
+        if(!newPermissions.some(j => j.name === old.appPermission.name)) {
+            remove.push(old.appPermission.id)
         }
     }
 
     await Promise.all(upsert.map(([id, args]) => upsertUserAppPermission(user.id, userAppRelation.appId, id, args)))
     await Promise.all(remove.map(id => dropUserAppPermission(user.id, userAppRelation.appId, id)))
 
-    ctx.response.body = adminAppUserSchema.parse({user, userAppRelation, userAppPermissions: newPermissions})
+    ctx.response.body = adminUserInAppSchema.parse({user, userAppRelation, userAppPermissions: newPermissions})
 }
 
 

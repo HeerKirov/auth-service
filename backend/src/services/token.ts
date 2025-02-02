@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken"
 import { User } from "@/schema/user"
 import { db } from "@/utils/db"
 import { App } from "@/schema/app"
+import { userAppPermissionSchemaForToken } from "@/schema/user-app"
 import { RefreshToken } from "@/schema/token"
 import { JsonWebTokenPayload } from "@/schema/authorize"
 import { flushUserRefreshTime } from "@/services/user"
@@ -59,7 +60,7 @@ export async function deleteRefreshToken(record: RefreshToken): Promise<void> {
 }
 
 export async function createAccessToken(user: User, app: App): Promise<string> {
-    const permissions = await selectUserAppPermissions(user.id, app.id)
+    const permissions = (await selectUserAppPermissions(user.id, app.id)).map(p => userAppPermissionSchemaForToken.parse(p))
     const jwtSecret = app.appId === config.app.appId ? config.app.jwtSecret : app.appSecret
     const createTime = Date.now()
     const payload: JsonWebTokenPayload = {

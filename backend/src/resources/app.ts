@@ -37,7 +37,7 @@ export async function retrieveMyApp(ctx: Context) {
         throw new ServerError(404, ErrorCode.NotFound, "UserAppRelation not found")
     }
 
-    const permissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
+    const userAppPermissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
 
-    ctx.response.body = myAppSchema.parse({app, userAppRelation, selectUserAppPermissions: permissions})
+    ctx.response.body = myAppSchema.parse({app, userAppRelation, userAppPermissions})
 }

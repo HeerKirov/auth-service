@@ -1,12 +1,19 @@
-import { UserAppPermission } from "@/schema/user-app"
-import { db } from "@/utils/db"
+import { UserAppPermission, userAppPermissionFields } from "@/schema/user-app"
+import { AppPermission, appPermissionFields } from "@/schema/app-permission"
+import { db, constructJoinNest, projectJoinNest } from "@/utils/db"
 
-export async function selectUserAppPermissions(userId: number, appId: number): Promise<{name: string, args: Record<string, unknown>}[]> {
-    return db.from("user_app_permission")
-        .select("user_app_permission.arguments as args", "app_permission.name AS name")
-        .innerJoin("app_permission", "user_app_permission.permissionId", "app_permission.id")
-        .where({"user_app_permission.appId": appId, "user_app_permission.userId": userId})
+export async function selectUserAppPermissions(userId: number, appId: number): Promise<{appPermission: AppPermission, userAppPermission: UserAppPermission}[]> {
+    const result = await db.from<UserAppPermission>("user_app_permission")
+        .innerJoin<AppPermission>("app_permission", "user_app_permission.permissionId", "app_permission.id")
+        .select(
+            ...projectJoinNest("app_permission", appPermissionFields, "appPermission"),
+            ...projectJoinNest("user_app_permission", userAppPermissionFields, "userAppPermission")
+        )
+        .where("user_app_permission.appId", appId)
+        .where("user_app_permission.userId", userId)
         .orderBy("app_permission.createTime", "ASC")
+
+    return result.map(constructJoinNest)
 }
 
 export async function upsertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>): Promise<UserAppPermission> {

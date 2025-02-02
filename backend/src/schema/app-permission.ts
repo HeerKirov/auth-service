@@ -45,3 +45,5 @@ export interface ArgumentDefinition {
 export type PermissionCreateSchema = z.infer<typeof permissionCreateSchema>
 
 export type PermissionUpdateSchema = z.infer<typeof permissionUpdateSchema>
+
+export const appPermissionFields = ["id", "appId", "name", "displayName", "arguments", "createTime"] as const

@@ -2,6 +2,7 @@ import { Context, Next } from "koa"
 import jwt, { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken"
 import { App } from "@/schema/app"
 import { User } from "@/schema/user"
+import { userAppPermissionSchemaForToken } from "@/schema/user-app"
 import { JsonWebTokenPayload, State } from "@/schema/authorize"
 import { compareUser, getUser, getUserById } from "@/services/user"
 import { deleteRefreshToken, flushRefreshToken, getRefreshToken } from "@/services/token"
@@ -83,20 +84,7 @@ async function verifyBasicAuth(username: string, password: string): Promise<Stat
 
     const app = (await getApp(config.app.appId))!
 
-    let permissions: {name: string, args: Record<string, unknown>}[] | null = null
-
-    return {
-        username: user.username,
-        appId: app.appId,
-        async getPermissions() {
-            if(permissions === null) {
-                permissions = await selectUserAppPermissions(user.id, app.id)
-            }
-            return permissions
-        },
-        getUser: async () => user,
-        getApp: async () => app,
-    }
+    return exportState(user, app)
 }
 
 async function verifyRefreshToken(token: string, strict: boolean, ctx: Context): Promise<State> {
@@ -124,6 +112,10 @@ async function verifyRefreshToken(token: string, strict: boolean, ctx: Context):
         ctx.cookies.set("token", token.token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 })
     }
 
+    return exportState(user, app)
+}
+
+function exportState(user: User, app: App): State {
     let permissions: {name: string, args: Record<string, unknown>}[] | null = null
 
     return {
@@ -131,7 +123,7 @@ async function verifyRefreshToken(token: string, strict: boolean, ctx: Context):
         appId: app.appId,
         async getPermissions() {
             if(permissions === null) {
-                permissions = await selectUserAppPermissions(user.id, app.id)
+                permissions = (await selectUserAppPermissions(user.id, app.id)).map(p => userAppPermissionSchemaForToken.parse(p))
             }
             return permissions
         },

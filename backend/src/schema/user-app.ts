@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { userSchema } from "@/schema/user"
 import { appSchema } from "@/schema/app"
+import { permissionSchema } from "@/schema/app-permission"
 
 export const userAppRelationSchema = z.object({
     fields: z.record(z.string(), z.any()),
@@ -8,15 +9,35 @@ export const userAppRelationSchema = z.object({
     lastRefreshTime: z.date().nullable()
 })
 
-export const appUserPermissionSchema = z.array(z.object({
+export const permissionArgumentsSchema = z.array(z.object({
     name: z.string(),
     args: z.record(z.string(), z.any())
 }))
 
-export const adminAppUserSchema = z.object({
+const userAppPermissionMiddle = z.object({
+    appPermission: permissionSchema,
+    userAppPermission: z.object({
+        arguments: z.record(z.string(), z.any()),
+        createTime: z.date()
+    })
+})
+
+export const userAppPermissionSchema = userAppPermissionMiddle.transform(({ appPermission, userAppPermission }) => ({
+    name: appPermission.name,
+    displayName: appPermission.displayName,
+    argumentDefinitions: appPermission.arguments,
+    args: userAppPermission.arguments
+}))
+
+export const userAppPermissionSchemaForToken = userAppPermissionMiddle.transform(({ appPermission, userAppPermission }) => ({
+    name: appPermission.name,
+    args: userAppPermission.arguments
+}))
+
+export const adminUserInAppSchema = z.object({
     user: userSchema,
     userAppRelation: userAppRelationSchema,
-    userAppPermissions: appUserPermissionSchema.optional()
+    userAppPermissions: z.array(userAppPermissionSchema).optional()
 }).transform(({ user, userAppRelation, userAppPermissions }) => ({
     ...user,
     userAppRelation,
@@ -26,7 +47,7 @@ export const adminAppUserSchema = z.object({
 export const myAppSchema = z.object({
     app: appSchema,
     userAppRelation: userAppRelationSchema,
-    userAppPermissions: appUserPermissionSchema.optional()
+    userAppPermissions: z.array(userAppPermissionSchema).optional()
 }).transform(({ app, userAppRelation, userAppPermissions }) => ({
     ...app,
     userAppRelation,
@@ -52,3 +73,5 @@ export interface UserAppPermission {
 }
 
 export const userAppRelationFields = ["id", "appId", "userId", "fields", "createTime", "lastRefreshTime"] as const
+
+export const userAppPermissionFields = ["id", "appId", "permissionId", "userId", "arguments", "createTime"] as const
