@@ -1,4 +1,4 @@
-import { fetchRequest } from "@/lib/api/fetch"
+import { fetchRequest } from "./fetch"
 
 export const getUserInfo = () => fetchRequest<User>("/my/user/info", {method: "GET"})
 

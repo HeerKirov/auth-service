@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode"
-import { getAccessToken, setAccessToken } from "@/lib/store/user.svelte";
+import { getAccessToken, setAccessToken } from "@/lib/store/user.svelte"
 
 export async function fetchRequest<T, E extends string | undefined = undefined>(url: string, init?: RequestConfig): Promise<IResponse<T, E | undefined>> {
     const { authorization = true, query, ...config } = init ?? {}
@@ -77,4 +77,9 @@ export interface ListResult<T> {
 export interface OffsetAndLimitFilter {
     offset?: number
     limit?: number
+}
+
+export interface SearchAndEnabledFilter extends OffsetAndLimitFilter {
+    search?: string
+    enabled?: boolean
 }

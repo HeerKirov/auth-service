@@ -1,4 +1,5 @@
-import { fetchRequest, ListResult } from "@/lib/api/fetch"
+import { fetchRequest, ListResult } from "./fetch"
+import { UserAppPermission, UserAppRelation } from "./admin-app-user"
 
 export const listApps = () => fetchRequest<ListResult<MyApp>>("/my/apps", {method: "GET"})
 
@@ -13,26 +14,6 @@ export interface App {
     domains: string[]
     enabled: boolean
     createTime: string
-}
-
-export interface UserAppRelation {
-    fields: Record<string, unknown>
-    createTime: string
-    lastRefreshTime: string | null
-}
-
-export interface ArgumentDefinition {
-    name: string
-    type: "string" | "number" | "boolean"
-    optional: boolean
-    comment: string | null
-}
-
-export interface UserAppPermission {
-    name: string
-    displayName: string
-    argumentDefinitions: ArgumentDefinition[]
-    args: Record<string, unknown>
 }
 
 export interface MyApp extends App {

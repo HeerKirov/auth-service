@@ -1,8 +1,8 @@
-import { fetchRequest, ListResult, OffsetAndLimitFilter } from "@/lib/api/fetch"
-import { User, UserPartialUpdateForm } from "@/lib/api/user"
+import { fetchRequest, ListResult, SearchAndEnabledFilter } from "./fetch"
+import { User, UserPartialUpdateForm } from "./user"
 
 
-export const listUsers = (filter?: OffsetAndLimitFilter) => fetchRequest<ListResult<User>>("/admin/users", {method: "GET", query: filter})
+export const listUsers = (filter?: SearchAndEnabledFilter) => fetchRequest<ListResult<User>>("/admin/users", {method: "GET", query: filter})
 
 export const getUser = (username: string) => fetchRequest<User>(`/admin/users/${username}`, {method: "GET"})
 

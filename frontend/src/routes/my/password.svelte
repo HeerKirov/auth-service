@@ -1,7 +1,7 @@
 <script lang="ts">
 import { PasswordModifier } from "@/layouts"
 
-const onsuccess = () => history.pushState({}, "", "/")
+const onsuccess = () => history.pushState({}, "", "/login")
 
 const oncancel = () => history.back()
 

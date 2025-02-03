@@ -5,7 +5,7 @@ export const login = (form: LoginForm) => fetchRequest<TokenResponse, "INVALID_U
 
 export const logout = () => fetchRequest<undefined>("/logout", {method: "POST"})
 
-export const register = (form: RegisterForm) => fetchRequest<TokenResponse>("/register", {method: "POST", authorization: false, body: JSON.stringify(form)})
+export const register = (form: RegisterForm) => fetchRequest<TokenResponse, "ALREADY_EXISTS">("/register", {method: "POST", authorization: false, body: JSON.stringify(form)})
 
 export const authorize = (form: AuthorizeForm) => fetchRequest<AuthorizeResponse, "NOT_FOUND" | "DISABLED_USER" | "DISABLED_APP" | "INVALID_REDIRECT_URI">("/authorize", {method: "POST", body: JSON.stringify(form)})
 

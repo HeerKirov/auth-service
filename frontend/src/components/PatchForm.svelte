@@ -4,11 +4,18 @@ import type { HTMLAttributes } from "svelte/elements"
 import { Check, Pencil } from "lucide-svelte"
 import { Button } from "@/components/index"
 
-const { value, setValue, display: defaultSnippet, edit: editSnippet, ...attrs }: HTMLAttributes<HTMLDivElement> & {
+const {
+    value, setValue,
+    showEditButton = true, showSaveButton = true,
+    display: defaultSnippet, edit: editSnippet,
+    ...attrs
+}: HTMLAttributes<HTMLDivElement> & {
     value: T
     setValue?: (value: T) => Promise<boolean> | boolean | void
     display?: Snippet<[T]>
     edit?: Snippet<[T]>
+    showEditButton?: boolean
+    showSaveButton?: boolean
 } = $props()
 
 let editMode = $state(false)
@@ -43,9 +50,9 @@ const save = async () => {
 <div {...attrs}>
     {#if editMode}
         {@render editSnippet?.(editValue!, setEditValue, save)}
-        <Button class="absolute ml-1" square onclick={save}><Check size={20}/></Button>
+        {#if showSaveButton}<Button class="absolute ml-1" square onclick={save}><Check size={20}/></Button>{/if}
     {:else}
         {@render defaultSnippet?.(value, edit)}
-        <Button class="absolute ml-1" square onclick={edit}><Pencil size={20}/></Button>
+        {#if showEditButton}<Button class="absolute ml-1" square onclick={edit}><Pencil size={20}/></Button>{/if}
     {/if}
 </div>

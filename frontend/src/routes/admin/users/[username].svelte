@@ -5,6 +5,7 @@ import { KeySquare, ShieldBan, ShieldCheck, Trash } from "lucide-svelte"
 import { Button, Input, PatchForm } from "@/components"
 import { PasswordModifier } from "@/layouts"
 import { admin, type User } from "@/lib/api"
+import { toDateString } from "@/utils/date"
 import empty from "@/assets/empty.jpg"
 
 let { username }: {
@@ -17,8 +18,6 @@ onMount(async () => {
     const r = await admin.user.getUser(username)
     if(r.ok) {
         userInfo = r.data
-    }else if(r.status === 401) {
-        history.pushState({}, "", "/login")
     }
 })
 
@@ -84,6 +83,8 @@ const closeMenu = () => menuMode = null
         {#if !userInfo.enabled}
             <div class="text-red-400"><ShieldBan size={20} class="mr-1"/>用户已被禁用</div>
         {/if}
+        <div class="text-sm"><b class="select-none text-gray-500">注册时间</b> <span class="text-gray-400">{toDateString(userInfo.createTime)}</span></div>
+        <div class="text-sm"><b class="select-none text-gray-500">上次登录</b> <span class="text-gray-400">{userInfo.lastRefreshTime ? toDateString(userInfo.lastRefreshTime) : "XXXX-XX-XX"}</span></div>
     </div>
     <div class="mt-4 text-sm flex flex-wrap items-baseline justify-center">
         <div class="basis-full sm:basis-auto text-center">

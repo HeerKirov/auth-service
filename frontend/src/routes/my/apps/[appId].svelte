@@ -1,6 +1,7 @@
 <script lang="ts">
-import { CircleUser, CircleUserRound, ShieldBan, UserCircle } from "lucide-svelte"
+import { ShieldBan } from "lucide-svelte"
 import { Anchor } from "@/components"
+import { PermissionListDisplay } from "@/layouts"
 import { app, type MyAppDetail } from "@/lib/api"
 import { toDateString } from "@/utils/date"
 import empty from "@/assets/empty.jpg"
@@ -37,27 +38,7 @@ $effect(() => {
                 <div class="mt-1 text-gray-400">...</div>
             {/if}
             <p class="text-sm font-bold mt-2">在此App中的权限</p>
-            {#each data?.userAppPermissions ?? [] as p}
-                <div class="mt-1">
-                    {#if p.name === "ADMIN"}<CircleUser class="mr-1" size={20}/>{:else}<CircleUserRound class="mr-1" size={20}/>{/if}
-                    {p.displayName}
-                    {#if p.argumentDefinitions.length > 0}
-                        <span class="text-sm text-slate-600 dark:text-neutral-400">
-                            (
-                            {#each p.argumentDefinitions as arg, i (arg.name)}
-                                {i > 0 ? ", ": ""}
-                                {arg.comment ?? arg.name}: <pre class="inline">{p.args[arg.name]}</pre>
-                            {/each}
-                            )
-                        </span>
-                    {/if}
-                </div>
-            {:else}
-                <div class="mt-1">
-                    <UserCircle class="mr-1" size={20}/>
-                    一般用户
-                </div>
-            {/each}
+            <PermissionListDisplay permissions={data?.userAppPermissions ?? []}/>
         </div>
         <div class="basis-full md:basis-auto shrink-0 md:text-right flex md:flex-col justify-between">
             {#if data && !data.enabled}

@@ -32,6 +32,8 @@ const register = async () => {
     if(r.ok) {
         setAccessToken(r.data.accessToken)
         onRegistered?.(username)
+    }else if(r.error === "ALREADY_EXISTS") {
+        error = "该用户ID已存在。"
     }else{
         error = r.message
         console.error("Register failed.", r.message)
