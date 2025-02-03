@@ -42,11 +42,12 @@ export async function putAppUserPermissions(ctx: Context) {
 
     const upsert: [number, Record<string, unknown>][] = []
     const remove: number[] = []
+    //TODO bug: 在权限可重复的情况下，这套判定算法是不正确的
     for(const form of newPermissions) {
         const permission = await getAppPermissionByName(userAppRelation.appId, form.name)
         if(permission === null) {
             ctx.response.status = 400
-            ctx.response.body = {message: `Permission '${form.name}' not found`}
+            ctx.response.body = {message: `Permission '${form.name}' not exist`}
             return
         }
         for(const argument of permission.arguments) {
@@ -75,7 +76,9 @@ export async function putAppUserPermissions(ctx: Context) {
     await Promise.all(upsert.map(([id, args]) => upsertUserAppPermission(user.id, userAppRelation.appId, id, args)))
     await Promise.all(remove.map(id => dropUserAppPermission(user.id, userAppRelation.appId, id)))
 
-    ctx.response.body = adminUserInAppSchema.parse({user, userAppRelation, userAppPermissions: newPermissions})
+    const userAppPermissions = await selectUserAppPermissions(user.id, userAppRelation.appId)
+
+    ctx.response.body = adminUserInAppSchema.parse({user, userAppRelation, userAppPermissions})
 }
 
 
@@ -88,7 +91,7 @@ async function getDetail(ctx: Context): Promise<[User, UserAppRelation]> {
     if(user === null) {
         throw new ServerError(404, ErrorCode.NotFound, "User not found")
     }
-    if(user.username === config.app.admin.username && app.appId === config.app.appId) {
+    if(ctx.method !== "GET" && user.username === config.app.admin.username && app.appId === config.app.appId) {
         throw new ServerError(403, ErrorCode.RootProtected, "Cannot alter ADMIN user's permissions for Auth-Service self.")
     }
     const userAppRelation = await getUserAppRelation(user.id, app.id)

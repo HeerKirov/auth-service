@@ -3,6 +3,7 @@ import { State } from "@/schema/authorize"
 import { userPatchSchema, userChangePasswordSchema, userSchema, userInAppSchema, userInAppPatchSchema } from "@/schema/user"
 import { compareUser, getUserById, setUser } from "@/services/user"
 import { getUserAppRelation, upsertUserAppFields } from "@/services/user-app"
+import { deleteRefreshTokenByUser } from "@/services/token"
 
 export async function getUserInfo(ctx: Context) {
     const state: State = ctx.state
@@ -62,6 +63,8 @@ export async function changeUserPassword(ctx: Context) {
     }
 
     await setUser(user.id, {password: form.password})
+
+    await deleteRefreshTokenByUser(user.id)
 
     ctx.response.body = {"success": true}
 }

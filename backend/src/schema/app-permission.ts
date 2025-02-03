@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { number, z } from "zod"
 
 const argumentDefinitionSchema = z.object({
     name: z.string().max(128),
@@ -20,6 +20,7 @@ export const permissionUpdateSchema = z.object({
 })
 
 export const permissionSchema = z.object({
+    id: z.number(),
     name: z.string(),
     displayName: z.string(),
     arguments: z.array(argumentDefinitionSchema),

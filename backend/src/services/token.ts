@@ -59,6 +59,14 @@ export async function deleteRefreshToken(record: RefreshToken): Promise<void> {
     await db.from<RefreshToken>("refresh_token").where({id: record.id}).del()
 }
 
+export async function deleteRefreshTokenByApp(appId: number): Promise<void> {
+    await db.from<RefreshToken>("refresh_token").where({appId}).del()
+}
+
+export async function deleteRefreshTokenByUser(userId: number): Promise<void> {
+    await db.from<RefreshToken>("refresh_token").where({userId}).del()
+}
+
 export async function createAccessToken(user: User, app: App): Promise<string> {
     const permissions = (await selectUserAppPermissions(user.id, app.id)).map(p => userAppPermissionSchemaForToken.parse(p))
     const jwtSecret = app.appId === config.app.appId ? config.app.jwtSecret : app.appSecret

@@ -1,9 +1,9 @@
 import { z } from "zod"
-import { userAppRelationSchema } from "@/schema/user-app";
+import { userAppRelationSchema } from "@/schema/user-app"
 
 export const userCreateSchema = z.object({
-    username: z.string().max(128),
-    password: z.string().max(64),
+    username: z.string().nonempty().max(128),
+    password: z.string().nonempty().max(64),
     displayName: z.string().max(128),
     avatar: z.string().nullable().optional(),
 })

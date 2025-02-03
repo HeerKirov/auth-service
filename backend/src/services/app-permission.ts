@@ -2,6 +2,7 @@ import { AppPermission, PermissionCreateSchema, PermissionUpdateSchema } from "@
 import { UserAppPermission } from "@/schema/user-app"
 import { OffsetAndLimitFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
+import { ErrorCode, ServerError } from "@/utils/error"
 import { db } from "@/utils/db"
 
 export async function selectAppPermissions(appId: number, filter: OffsetAndLimitFilter): Promise<ListResult<AppPermission>> {
@@ -20,7 +21,7 @@ export async function selectAppPermissions(appId: number, filter: OffsetAndLimit
 export async function createAppPermission(appId: number, p: PermissionCreateSchema): Promise<AppPermission> {
     const exists = await db.from<AppPermission>("app_permission").where({appId, name: p.name}).first()
     if(exists) {
-        throw new Error(`Permission '${p.name}' already exists`)
+        throw new ServerError(400, ErrorCode.AlreadyExists, `Permission '${p.name}' already exists`)
     }
 
     const createTime = new Date()

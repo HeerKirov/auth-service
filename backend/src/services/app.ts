@@ -6,6 +6,7 @@ import { UserAppPermission, UserAppRelation } from "@/schema/user-app"
 import { AppFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
 import { db } from "@/utils/db"
+import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
 export async function selectApps(filter: AppFilter): Promise<ListResult<App>> {
@@ -28,7 +29,7 @@ export async function selectApps(filter: AppFilter): Promise<ListResult<App>> {
 export async function createApp(app: AppCreateSchema): Promise<App> {
     const exists = await db("app").where({"appId": app.appId}).first()
     if (exists) {
-        throw new Error("App already exists")
+        throw new ServerError(400, ErrorCode.AlreadyExists, "App already exists")
     }
 
     const appSecret = app.appId !== config.app.appId ? randomBytes(32).toString("base64") : ""

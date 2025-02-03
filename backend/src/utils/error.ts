@@ -54,4 +54,8 @@ export const ErrorCode = {
      * 404：资源未找到。
      */
     NotFound: "NOT_FOUND",
+    /**
+     * 400: 想要创建的资源已经存在。
+     */
+    AlreadyExists: "ALREADY_EXISTS",
 }

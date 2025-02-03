@@ -2,6 +2,7 @@ import { Context } from "koa"
 import { appFilter } from "@/schema/filters"
 import { appAdminCreateSchema, appAdminPatchSchema, appSchema, appSecretSchema } from "@/schema/app"
 import { createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
+import { deleteRefreshTokenByApp } from "@/services/token"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
@@ -80,6 +81,7 @@ export async function patchAppSecret(ctx: Context) {
     }
 
     await regenerateAppSecret(app.id)
+    await deleteRefreshTokenByApp(app.id)
 
     ctx.response.body = appSecretSchema.parse(await getAppById(app.id))
 }

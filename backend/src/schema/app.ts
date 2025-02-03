@@ -1,8 +1,8 @@
 import { z } from "zod"
 
 export const appAdminCreateSchema = z.object({
-    appId: z.string().max(128),
-    appName: z.string().max(128),
+    appId: z.string().nonempty().max(128),
+    appName: z.string().nonempty().max(128),
     description: z.string().max(256).optional(),
     url: z.string().max(256).optional(),
     avatar: z.string().nullable().optional(),
@@ -11,7 +11,7 @@ export const appAdminCreateSchema = z.object({
 })
 
 export const appAdminPatchSchema = z.object({
-    appName: z.string().max(128).optional(),
+    appName: z.string().nonempty().max(128).optional(),
     description: z.string().max(256).optional(),
     url: z.string().max(256).optional(),
     avatar: z.string().nullable().optional(),
