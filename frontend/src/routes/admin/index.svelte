@@ -4,9 +4,9 @@ import { hasPermission } from "@/lib/store/user.svelte"
 
 onMount(() => {
     if(hasPermission("ADMIN")) {
-        history.pushState({}, "", "/admin/system")
+        history.replaceState({}, "", "/admin/system")
     }else if(hasPermission("APP_ADMIN")) {
-        history.pushState({}, "", "/admin/apps")
+        history.replaceState({}, "", "/admin/apps")
     }
 })
 

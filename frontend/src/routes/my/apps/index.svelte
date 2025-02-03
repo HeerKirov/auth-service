@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte"
 import { ShieldBan } from "lucide-svelte"
+import { Anchor } from "@/components"
 import { app, type MyApp } from "@/lib/api"
 import { toDateString } from "@/utils/date"
 import empty from "@/assets/empty.jpg"
@@ -32,13 +33,13 @@ const keydown = (item: MyApp, e: KeyboardEvent) => {
 
 <div class="container-page px-2 py-4 md:py-8 flex flex-wrap gap-1">
     {#each data as item (item.appId)}
-        <div role="button" tabindex={0} class="basis-full bg-slate-50 dark:bg-neutral-700 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer mb-2 p-3 flex justify-between flex-wrap items-stretch text-left md:flex-nowrap" onclick={() => click(item)} onkeydown={e => keydown(item, e)}>
+        <div role="button" tabindex={0} class="basis-full bg-slate-50 dark:bg-zinc-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer mb-2 p-3 flex justify-between flex-wrap items-stretch text-left md:flex-nowrap" onclick={() => click(item)} onkeydown={e => keydown(item, e)}>
             <div class="basis-full md:basis-auto">
                 <div class="flex">
                     <img class="shrink-0 rounded-md w-16 h-16" src={item.avatar ?? empty} alt="app icon"/>
                     <div class="pl-2 pt-1">
                         <p class="text-2xl">{item.appName}</p>
-                        {#if item.url}<p><a href={item.url} target="_blank" onclick={clickURL}>{item.url}</a></p>{/if}
+                        {#if item.url}<p><Anchor color="primary" href={item.url} target="_blank" onclick={clickURL}>{item.url}</Anchor></p>{/if}
                     </div>
                 </div>
                 {#if item.description}<div class="mt-1">{item.description}</div>{/if}

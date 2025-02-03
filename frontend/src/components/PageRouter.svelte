@@ -23,9 +23,9 @@ const last = () => page = totalPage
 
 </script>
 
-<div {...attrs} class={[clz, "flex", "items-center"]}>
-    <div class="shrink-0 px-2">共{total}项</div>
-    <div class="basis-full"></div>
+<div {...attrs} class={[clz, "flex", "items-center", "flex-wrap", "md:flex-nowrap", "justify-center"]}>
+    <div class="w-full md:w-auto md:shrink-0 text-center px-2 pb-1 md:pb-0">共{total}项</div>
+    <div class="hidden md:block basis-full"></div>
     {#if totalPage > 1}
         <Button class="shrink-0 size-[32.8px] text-sm flex items-center justify-center" color={canPrev ? "primary" : "secondary"} square disabled={!canPrev} onclick={first}>1</Button>
         <Button class="shrink-0 size-[32.8px]" color={canPrev ? "primary" : "secondary"} square disabled={!canPrev} onclick={prev}><ArrowLeft size={20}/></Button>

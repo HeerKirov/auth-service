@@ -1,5 +1,6 @@
 <script lang="ts">
 import { CircleUser, CircleUserRound, ShieldBan, UserCircle } from "lucide-svelte"
+import { Anchor } from "@/components"
 import { app, type MyAppDetail } from "@/lib/api"
 import { toDateString } from "@/utils/date"
 import empty from "@/assets/empty.jpg"
@@ -21,13 +22,13 @@ $effect(() => {
 </script>
 
 <div class="container-page px-2 py-4 md:py-8 flex flex-wrap gap-1">
-    <div class="basis-full bg-slate-50 dark:bg-neutral-700 rounded-lg shadow-lg hover:shadow-xl transition-shadow mb-2 p-3 flex justify-between flex-wrap md:flex-nowrap">
+    <div class="basis-full bg-slate-50 dark:bg-zinc-800 rounded-lg shadow-lg hover:shadow-xl transition-shadow mb-2 p-3 flex justify-between flex-wrap md:flex-nowrap">
         <div class="basis-full md:basis-auto">
             <div class="flex">
                 <img class="shrink-0 rounded-md w-16 h-16" src={data?.avatar ?? empty} alt="app icon"/>
                 <div class="pl-2 pt-1">
                     <p class="text-2xl">{data?.appName}</p>
-                    {#if data?.url}<p><a href={data.url} target="_blank">{data.url}</a></p>{/if}
+                    {#if data?.url}<p><Anchor color="primary" href={data.url} target="_blank">{data.url}</Anchor></p>{/if}
                 </div>
             </div>
             {#if data?.description}

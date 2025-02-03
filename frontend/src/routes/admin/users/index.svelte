@@ -1,5 +1,5 @@
 <script lang="ts">
-import { PageRouter } from "@/components"
+import { Anchor, PageRouter } from "@/components"
 import { admin, type User } from "@/lib/api"
 import { toDateString } from "@/utils/date"
 import empty from "@/assets/empty.jpg"
@@ -48,13 +48,13 @@ $effect(() => { loadData() })
         {#each data as item (item.username)}
             <tr>
                 <td>
-                    <img class="w-12 h-12 m-1 object-cover object-center inline-block rounded-full" src={item.avatar ?? empty} alt="user avatar"/>
+                    <img class="w-10 h-10 m-1 object-cover object-center inline-block rounded-full" src={item.avatar ?? empty} alt="user avatar"/>
                 </td>
                 <td class="text-center">
-                    @{item.username}
+                    @<Anchor href={`/admin/users/${item.username}`}>{item.username}</Anchor>
                 </td>
                 <td class="text-center">
-                    {item.displayName}
+                    <Anchor href={`/admin/users/${item.username}`}>{item.displayName}</Anchor>
                 </td>
                 <td class="hidden md:table-cell text-gray-400 text-center">
                     {toDateString(item.createTime)}
