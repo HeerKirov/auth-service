@@ -62,10 +62,10 @@ $effect(() => { loadData() })
                 {/if}
             </td>
             <td class="text-nowrap text-left">
-                {item.name}
+                <Anchor href={`/admin/apps/${appId}/permissions/${item.id}`}>{item.name}</Anchor>
             </td>
             <td class="text-center text-nowrap">
-                {item.displayName}
+                <Anchor href={`/admin/apps/${appId}/permissions/${item.id}`}>{item.displayName}</Anchor>
             </td>
             <td class="hidden md:table-cell text-gray-400 text-center">
                 {item.arguments.length ? `${item.arguments.length}个` : null}

@@ -55,6 +55,8 @@ const submit = () => {
     error = ""
 }
 
+//TODO 没有对参数类型做处理
+
 </script>
 
 {#each permissions as p, index}

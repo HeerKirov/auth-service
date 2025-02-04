@@ -5,6 +5,8 @@ export const listPermissions = (appId: string, filter?: OffsetAndLimitFilter) =>
 
 export const createPermission = (appId: string, form: AppPermissionCreateForm) => fetchRequest<AppPermission, "ALREADY_EXISTS">(`/admin/apps/${appId}/permissions`, {method: "POST", body: JSON.stringify(form)})
 
+export const getPermission = (appId: string, permissionId: number) => fetchRequest<AppPermission>(`/admin/apps/${appId}/permissions/${permissionId}`, {method: "GET"})
+
 export const patchPermission = (appId: string, permissionId: number, form: Partial<AppPermissionCreateForm>) => fetchRequest<AppPermission>(`/admin/apps/${appId}/permissions/${permissionId}`, {method: "PATCH", body: JSON.stringify(form)})
 
 export const deletePermission = (appId: string, permissionId: number) => fetchRequest<undefined>(`/admin/apps/${appId}/permissions/${permissionId}`, {method: "DELETE"})
