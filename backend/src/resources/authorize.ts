@@ -5,6 +5,7 @@ import { compareUser, createUser, getUser } from "@/services/user"
 import { getApp } from "@/services/app"
 import { createAccessToken, createRefreshToken } from "@/services/token"
 import { createAuthorizationCode, validateAuthorizationCode } from "@/services/authorization-code"
+import { getSetting, SETTINGS } from "@/services/setting"
 import { isValidRedirectURI } from "@/utils/url"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
@@ -28,6 +29,11 @@ export async function login(ctx: Context) {
  * 注册一个新用户。
  */
 export async function register(ctx: Context) {
+    if(!await getSetting(SETTINGS.REGISTRATION_SWITCH)) {
+        ctx.response.body = {message: "Registration is closed."}
+        ctx.response.status = 422
+        return
+    }
     const form = userCreateSchema.parse(ctx.request.body)
 
     const user = await createUser(form)
@@ -61,9 +67,9 @@ export async function authorize(ctx: Context) {
         throw new ServerError(403, ErrorCode.InvalidRedirectURI, "Invalid redirect URI")
     }
 
-    ctx.response.body = {
-        authorizationCode: createAuthorizationCode(state.username, targetApp.appId)
-    }
+    const authorizationCode = await createAuthorizationCode(state.username, targetApp.appId)
+
+    ctx.response.body = {authorizationCode}
     ctx.response.status = 201
 }
 
@@ -136,7 +142,7 @@ async function tokenForThisApp(ctx: Context, user: User) {
     const accessToken = await createAccessToken(user, app!)
 
     //默认情况下，refreshToken直接写入cookie，不会在返回值中显现
-    ctx.cookies.set("token", refreshToken, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 })
+    ctx.cookies.set("token", refreshToken, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
     if(config.debug) {
         //而在debug开启的模式下，会改变返回值，在其中加入refreshToken，方便调试
         ctx.response.body = {

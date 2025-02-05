@@ -8,6 +8,7 @@ import { compareUser, getUser, getUserById } from "@/services/user"
 import { deleteRefreshToken, flushRefreshToken, getRefreshToken } from "@/services/token"
 import { getApp, getAppById } from "@/services/app"
 import { selectUserAppPermissions } from "@/services/user-permission"
+import { getSetting, SETTINGS } from "@/services/setting"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
@@ -107,9 +108,9 @@ async function verifyRefreshToken(token: string, strict: boolean, ctx: Context):
     }
 
     const now = Date.now()
-    if(record.lastRefreshTime.getTime() - now > 1000 * 60 * 60 * 24) {
+    if(record.lastRefreshTime.getTime() - now > await getSetting(SETTINGS.REFRESH_TOKEN_AUTO_FLUSH)) {
         const token = await flushRefreshToken(record, now)
-        ctx.cookies.set("token", token.token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 })
+        ctx.cookies.set("token", token.token, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
     }
 
     return exportState(user, app)

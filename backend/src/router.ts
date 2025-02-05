@@ -4,8 +4,9 @@ import { listMyApps, retrieveMyApp } from "@/resources/app"
 import { getUserInfo, patchUserInfo, changeUserPassword, getUserInfoInApp, patchUserInfoInApp } from "@/resources/user"
 import { deleteUser, listUsers, patchUser, patchUserPassword, postUser, retrieveUser } from "@/resources/admin-user"
 import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret } from "@/resources/admin-app"
-import { deleteAppPermission, listAppPermissions, patchAppPermission, postAppPermission } from "@/resources/admin-app-permission"
+import { deleteAppPermission, listAppPermissions, patchAppPermission, postAppPermission, retrieveAppPermission } from "@/resources/admin-app-permission"
 import { listAppUsers, putAppUserPermissions, retrieveAppUser } from "@/resources/admin-app-user"
+import { getSettings, patchSettings } from "@/resources/setting";
 
 const router = new Router()
 
@@ -42,11 +43,15 @@ router.patch("/admin/apps/:appId/secret", patchAppSecret)
 
 router.get("/admin/apps/:appId/permissions", listAppPermissions)
 router.post("/admin/apps/:appId/permissions", postAppPermission)
+router.get("/admin/apps/:appId/permissions/:id", retrieveAppPermission)
 router.patch("/admin/apps/:appId/permissions/:id", patchAppPermission)
 router.delete("/admin/apps/:appId/permissions/:id", deleteAppPermission)
 
 router.get("/admin/apps/:appId/users", listAppUsers)
 router.get("/admin/apps/:appId/users/:username", retrieveAppUser)
 router.put("/admin/apps/:appId/users/:username/permissions", putAppUserPermissions)
+
+router.get("/admin/settings", getSettings)
+router.patch("/admin/settings", patchSettings)
 
 export default router

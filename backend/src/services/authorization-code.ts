@@ -1,16 +1,17 @@
 import { randomBytes } from "crypto"
+import { SETTINGS, getSetting } from "@/services/setting"
 
 const authorizationCodes = new Map<string, {username: string, appId: string, expireTime: number}>()
 
 /**
  * 创建一个授权码。授权码有确定依赖的user和app。
  */
-export function createAuthorizationCode(username: string, appId: string): string {
+export async function createAuthorizationCode(username: string, appId: string): Promise<string> {
     const ac = randomBytes(16).toString("hex")
 
     const now = Date.now()
 
-    authorizationCodes.set(ac, {username, appId, expireTime: now + 1000 * 60 * 10})
+    authorizationCodes.set(ac, {username, appId, expireTime: now + await getSetting(SETTINGS.AUTHORIZATION_CODE_DELAY)})
 
     const expiredKeys = [...authorizationCodes.entries().filter(([_, v]) => v.expireTime < now).map(([k, _]) => k)]
     if(expiredKeys.length > 0) {

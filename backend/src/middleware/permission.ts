@@ -3,8 +3,8 @@ import { State } from "@/schema/authorize"
 import { ErrorCode, ServerError } from "@/utils/error"
 
 export async function permission(ctx: Context, next: Next) {
-    //访问任何/admin/users的API都要求ADMIN权限
-    if(ctx.path.startsWith("/admin/users")) {
+    //访问任何/admin/users或/admin/settings的API都要求ADMIN权限
+    if(ctx.path.startsWith("/admin/users") || ctx.path.startsWith("/admin/settings")) {
         const state: State = ctx.state
         const permissions = await state.getPermissions()
         if(!permissions.some(p => p.name === "ADMIN")) {

@@ -34,10 +34,18 @@ export async function postAppPermission(ctx: Context) {
     ctx.response.status = 201
 }
 
+export async function retrieveAppPermission(ctx: Context) {
+    const appPermission = await getDetail(ctx)
+
+    ctx.response.body = permissionSchema.parse(appPermission)
+}
+
 export async function patchAppPermission(ctx: Context) {
     const appPermission = await getDetail(ctx)
 
     const form = permissionUpdateSchema.parse(ctx.request.body)
+
+    //TODO 需要校验参数列表是否唯一
 
     await setAppPermission(appPermission.id, form)
 
@@ -46,6 +54,8 @@ export async function patchAppPermission(ctx: Context) {
 
 export async function deleteAppPermission(ctx: Context) {
     const appPermission = await getDetail(ctx)
+
+    //TODO 阻止删除根App的根权限
 
     await dropAppPermission(appPermission.id)
 

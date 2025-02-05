@@ -56,7 +56,7 @@ export async function putAppUserPermissions(ctx: Context) {
                 ctx.response.status = 400
                 ctx.response.body = {message: `Permission '${form.name}': argument '${argument.name}' is required`}
                 return
-            }else if(typeof value !== argument.type) {
+            }else if(value !== null && value !== undefined && typeof value !== argument.type) {
                 ctx.response.status = 400
                 ctx.response.body = {message: `Permission '${form.name}': argument '${argument.name}' requires ${argument.type} but actually ${typeof value}`}
                 return
