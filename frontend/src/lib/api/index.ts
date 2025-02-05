@@ -12,6 +12,8 @@ import * as adminAppPermission from "./admin-app-permission"
 import { AppPermission, AppPermissionCreateForm, ArgumentDefinition } from "./admin-app-permission"
 import * as adminAppUser from "./admin-app-user"
 import { UserInApp, UserInAppDetail, UserAppRelation, UserAppPermission, UserAppPermissionUpdateForm} from "./admin-app-user"
+import * as adminSetting from "./admin-setting"
+import { Settings } from "./admin-setting"
 
 export { preloadAuthorization } from "./fetch"
 
@@ -22,8 +24,9 @@ export const admin = {
     app: {
         ...adminApp,
         permission: adminAppPermission,
-        user: adminAppUser
-    }
+        user: adminAppUser,
+    },
+    setting: adminSetting
 }
 
 export type {
@@ -34,4 +37,5 @@ export type {
     AdminAppCreateForm, AdminAppPartialUpdateForm, AppSecret,
     AppPermission, AppPermissionCreateForm, ArgumentDefinition,
     UserAppPermission, UserAppRelation, UserInApp, UserInAppDetail, UserAppPermissionUpdateForm,
+    Settings
 }
