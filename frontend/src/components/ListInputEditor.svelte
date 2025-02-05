@@ -5,7 +5,7 @@ import { Button, Input } from "@/components"
 
 let { value = $bindable(), setValue, placeholder, inputClass, class: clz, ...attrs }: {
     value?: string[]
-    setValue?: (value?: string[]) => void
+    setValue?: (value: string[]) => void
     placeholder?: string
     inputClass?: ClassValue
 } & HTMLAttributes<HTMLDivElement> = $props()

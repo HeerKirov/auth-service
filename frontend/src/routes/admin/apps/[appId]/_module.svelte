@@ -3,10 +3,11 @@ import { setContext } from "svelte"
 import { Info, ScanFace, UserRoundCheck } from "lucide-svelte"
 import { activeRoute } from "@roxi/routify"
 import { Anchor } from "@/components"
+import { urlMatch } from "@/utils/route"
 
 let { appId }: { appId: string } = $props()
 
-let choose = $derived($activeRoute.url.startsWith(`/admin/apps/${appId}/`) ? $activeRoute.url.substring(`/admin/apps/${appId}/`.length).split("/", 2)[0] : null)
+let choose = $derived(urlMatch($activeRoute.url, /^\/admin\/apps\/[^/]+\/(?<TYPE>[A-Za-z]+)/, "TYPE"))
 
 setContext("appId", appId)
 

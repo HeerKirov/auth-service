@@ -9,9 +9,9 @@ let { value = $bindable(), setValue }: {
 } = $props()
 
 const typeSelects = [
-    {key: "string", value: "string", label: "字符串"},
-    {key: "number", value: "number", label: "数值"},
-    {key: "boolean", value: "boolean", label: "布尔值"}
+    {key: "string", value: "string", label: "字符串"} as const,
+    {key: "number", value: "number", label: "数值"} as const,
+    {key: "boolean", value: "boolean", label: "布尔值"} as const
 ]
 
 function set<T extends keyof ArgumentDefinition>(index: number, field: T, v: ArgumentDefinition[T]) {

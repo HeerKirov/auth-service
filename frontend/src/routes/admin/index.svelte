@@ -1,12 +1,13 @@
 <script lang="ts">
 import { onMount } from "svelte"
 import { hasPermission } from "@/lib/store/user.svelte"
+import { routeReplace } from "@/utils/route"
 
 onMount(() => {
     if(hasPermission("ADMIN")) {
-        history.replaceState({}, "", "/admin/system")
+        routeReplace("/admin/system")
     }else if(hasPermission("APP_ADMIN")) {
-        history.replaceState({}, "", "/admin/apps")
+        routeReplace("/admin/apps")
     }
 })
 

@@ -6,6 +6,7 @@ import { Button, Input, PatchForm } from "@/components"
 import { auth, user, type User } from "@/lib/api"
 import { hasPermission } from "@/lib/store/user.svelte"
 import { toDateString } from "@/utils/date"
+import { routePush } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
 
 let userInfo: User | null = $state(null)
@@ -19,7 +20,7 @@ onMount(async () => {
     if(r.ok) {
         userInfo = r.data
     }else if(r.status === 401) {
-        history.pushState({}, "", "/login")
+        routePush("/login")
     }
 })
 
@@ -32,15 +33,15 @@ const setDisplayName = async (displayName: string) => {
     return true
 }
 
-const gotoApps = () => history.pushState({}, "", "/my/apps")
+const gotoApps = () => routePush("/my/apps")
 
-const gotoAdmin = () => history.pushState({}, "", "/admin")
+const gotoAdmin = () => routePush("/admin")
 
-const gotoChangePassword = () => history.pushState({}, "", "/my/password")
+const gotoChangePassword = () => routePush("/my/password")
 
 const logout = async () => {
     await auth.logout()
-    history.pushState({}, "", "/login")
+    routePush("/login")
 }
 
 const toggleManageMenu = () => isManageMenuOpen = !isManageMenuOpen

@@ -1,7 +1,8 @@
 <script lang="ts">
 import type { HTMLAnchorAttributes } from "svelte/elements"
+import { classifyHref } from "@/utils/route"
 
-let { color, mode = "normal", children, ...attrs }: HTMLAnchorAttributes & {
+let { color, mode = "normal", href, children, ...attrs }: HTMLAnchorAttributes & {
     mode?: "underline" | "normal"
     color?: "primary" | "secondary" | "success" | "info" | "warning" | "danger"
 } = $props()
@@ -33,9 +34,12 @@ const getStyleOfColors = () => {
 
 let cls = $derived([attrs["class"], `mode-${mode}`, ...getStyleOfColors()])
 
+//anchor的href具有对内部路由的自动修正机制。当href以绝对路径开头时，会将其自动修正为带有URL_PREFIX前缀的
+let finalHref = $derived(href && classifyHref(href) === "absolute_path" ? `${import.meta.env.VITE_URL_PREFIX}${href}` : href)
+
 </script>
 
-<a {...attrs} class={cls}>
+<a {...attrs} href={finalHref} class={cls}>
     {@render children?.()}
 </a>
 

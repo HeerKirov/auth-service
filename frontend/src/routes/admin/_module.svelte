@@ -4,12 +4,13 @@ import { Anchor } from "@/components"
 import { user, type User } from "@/lib/api"
 import { hasPermission } from "@/lib/store/user.svelte"
 import { activeRoute } from "@roxi/routify"
+import { urlMatch } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
 
 let isAdmin = $derived(hasPermission("ADMIN"))
 let isAppAdmin = $derived(hasPermission("APP_ADMIN"))
 
-let choose = $derived($activeRoute.url.startsWith("/admin/") ? $activeRoute.url.substring("/admin/".length).split("/", 2)[0] : null)
+let choose = $derived(urlMatch($activeRoute.url, /^\/admin\/(?<TYPE>[A-Za-z]+)/, "TYPE"))
 
 let userInfo: User | null = $state(null)
 

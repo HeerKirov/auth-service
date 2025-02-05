@@ -12,8 +12,8 @@ const {
 }: HTMLAttributes<HTMLDivElement> & {
     value: T
     setValue?: (value: T) => Promise<boolean> | boolean | void
-    display?: Snippet<[T]>
-    edit?: Snippet<[T]>
+    display?: Snippet<[T, () => void]>
+    edit?: Snippet<[T, (newValue: T) => void, () => Promise<void>]>
     showEditButton?: boolean
     showSaveButton?: boolean
 } = $props()

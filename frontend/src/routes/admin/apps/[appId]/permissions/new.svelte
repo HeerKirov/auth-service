@@ -4,6 +4,7 @@ import { CircleUserRound, Plus, UserCog, UserRoundCheck } from "lucide-svelte"
 import { Button, Input } from "@/components"
 import { PermissionArgumentListEditor } from "@/layouts"
 import { admin, type AppPermissionCreateForm } from "@/lib/api"
+import { routeReplace } from "@/utils/route"
 
 let appId = getContext<string>("appId")
 
@@ -31,7 +32,7 @@ const submit = async () => {
         arguments: args
     })
     if(r.ok) {
-        history.replaceState({}, "", `/admin/apps/${appId}/permissions`)
+        routeReplace(`/admin/apps/${appId}/permissions`)
     }else if(r.error === "ALREADY_EXISTS") {
         error = "该权限名称已存在。"
     }else{

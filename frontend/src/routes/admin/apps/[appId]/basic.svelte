@@ -6,6 +6,7 @@ import { Anchor, Button, Input, ListInputEditor, PatchForm } from "@/components"
 import { SecretViewer } from "@/layouts"
 import { admin, type AdminAppPartialUpdateForm, type App } from "@/lib/api"
 import { toDateString } from "@/utils/date"
+import { routeReplace } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
 
 let appId = getContext<string>("appId")
@@ -49,7 +50,7 @@ const toggleEnabled = async () => {
 const deleteApp = async () => {
     if(data !== null) {
         const r = await admin.app.deleteApp(data.appId)
-        if(r.ok) history.replaceState({}, "", "/admin/apps")
+        if(r.ok) routeReplace("/admin/apps")
         closeMenu()
     }
 }

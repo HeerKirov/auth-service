@@ -5,6 +5,7 @@ import { Check, CircleUserRound, PencilRuler, Trash, UserCog, UserRoundCheck } f
 import { Button, Input, PatchForm } from "@/components"
 import { PermissionArgumentListDisplay, PermissionArgumentListEditor, } from "@/layouts"
 import { admin, type AppPermission, type ArgumentDefinition } from "@/lib/api"
+import { routeReplace } from "@/utils/route"
 
 let appId = getContext<string>("appId")
 let { permissionId }: { permissionId: string } = $props()
@@ -53,7 +54,7 @@ const closeMenu = () => menuMode = null
 const deletePermission = async () => {
     if(data !== null) {
         const r = await admin.app.permission.deletePermission(appId, data.id)
-        if(r.ok) history.replaceState({}, "", `/admin/apps/${appId}/permissions`)
+        if(r.ok) routeReplace(`/admin/apps/${appId}/permissions`)
         closeMenu()
     }
 }

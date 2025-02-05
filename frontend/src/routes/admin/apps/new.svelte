@@ -2,6 +2,7 @@
 import { Plus } from "lucide-svelte"
 import { Button, Input, ListInputEditor } from "@/components"
 import { admin, type AdminAppCreateForm } from "@/lib/api"
+import { routeReplace } from "@/utils/route"
 
 let form: AdminAppCreateForm = $state({
     appId: "",
@@ -28,7 +29,7 @@ const submit = async () => {
         domains: form.domains.filter(i => !!i.trim())
     })
     if(r.ok) {
-        history.replaceState({}, "", "/admin/apps")
+        routeReplace("/admin/apps")
     }else if(r.error === "ALREADY_EXISTS") {
         error = "该App ID已存在。"
     }else{

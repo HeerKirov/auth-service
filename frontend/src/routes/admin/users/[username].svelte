@@ -6,6 +6,7 @@ import { Button, Input, PatchForm } from "@/components"
 import { PasswordModifier } from "@/layouts"
 import { admin, type User } from "@/lib/api"
 import { toDateString } from "@/utils/date"
+import { routeReplace } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
 
 let { username }: {
@@ -45,7 +46,7 @@ const deleteUser = async () => {
             return
         }
         const r = await admin.user.deleteUser(username)
-        if(r.ok) history.replaceState({}, "", "/admin/users")
+        if(r.ok) routeReplace("/admin/users")
         closeMenu()
         deleteCheckError = false
         deleteCheckInput = ""

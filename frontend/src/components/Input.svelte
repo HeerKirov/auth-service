@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { FormEventHandler, HTMLInputAttributes, KeyboardEventHandler } from "svelte/elements"
+import type { FormEventHandler, HTMLInputAttributes, KeyboardEventHandler } from "svelte/elements"
 import { autoFocus } from "@/utils/action"
 
 let { value = $bindable(), setValue, autoFocus: isAutoFocus = false, color = "normal", onenter, onkeydown, oninput, ...attrs }: {
     value?: string
-    setValue?: (newValue: string | undefined) => void
+    setValue?: (newValue: string) => void
     onenter?: (e: KeyboardEvent) => void
     color?: "normal" | "primary" | "secondary" | "success" | "info" | "warning" | "danger"
     autoFocus?: boolean

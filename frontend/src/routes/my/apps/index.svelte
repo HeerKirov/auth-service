@@ -4,6 +4,7 @@ import { ShieldBan } from "lucide-svelte"
 import { Anchor } from "@/components"
 import { app, type MyApp } from "@/lib/api"
 import { toDateString } from "@/utils/date"
+import { routePush } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
 
 let data: MyApp[] = $state([])
@@ -16,7 +17,7 @@ onMount(async () => {
 })
 
 const click = (item: MyApp) => {
-    history.pushState({}, "", `/my/apps/${item.appId}`)
+    routePush(`/my/apps/${item.appId}`)
 }
 
 const clickURL = (e: MouseEvent) => {

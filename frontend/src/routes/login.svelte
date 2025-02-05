@@ -1,9 +1,10 @@
 <script lang="ts">
 import { LoginPage, RegisterPage } from "@/layouts"
+import { routePush } from "@/utils/route"
 
 let mode: "login" | "register" = $state("login")
 
-const onLogin = () => history.pushState({}, "", "/")
+const onLogin = () => routePush("/")
 
 const onClickRegister = () => mode = "register"
 
