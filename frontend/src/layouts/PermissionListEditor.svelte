@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount } from "svelte"
 import { CircleUserRound, Plus, UserCog, UserRoundCheck, X } from "lucide-svelte"
-import { Button, Input, Select } from "@/components"
+import { Button, Input, NumberInput, Select } from "@/components"
 import { admin, type AppPermission, type UserAppPermission } from "@/lib/api"
 
 let { permissions, appId, setValue }: {
@@ -14,7 +14,7 @@ let selectList: {key: string, label: string, value: AppPermission}[] = $state([]
 
 let selected: AppPermission | null = $state(null)
 
-let args: Record<string, string> = $state({})
+let args: Record<string, any> = $state({})
 
 let error = $state("")
 
@@ -43,6 +43,9 @@ const submit = () => {
         if(!value && !argument.optional) {
             error = `[${argument.comment ?? argument.name}]参数缺失。`
             return
+        }else if(value !== undefined && typeof value !== argument.type) {
+            error = `[${argument.comment ?? argument.name}]所需类型为${argument.type}，但实际类型为${typeof value}。`
+            return
         }
     }
     setValue?.([...permissions, {
@@ -55,7 +58,16 @@ const submit = () => {
     error = ""
 }
 
-//TODO 没有对参数类型做处理
+const booleanSelections = [
+    {key: "true", value: true, label: "True"},
+    {key: "false", value: false, label: "False"},
+]
+
+const booleanOptionalSelections = [
+    {key: "none", value: undefined, label: "未选择"},
+    {key: "true", value: true, label: "True"},
+    {key: "false", value: false, label: "False"},
+]
 
 </script>
 
@@ -96,7 +108,13 @@ const submit = () => {
                         {#if !arg.optional}<span class="text-red-500">*</span>{/if}
                     </td>
                     <td>
-                        <Input class="m-1" placeholder={arg.name} bind:value={args[arg.name]}/>
+                        {#if arg.type === "boolean"}
+                            <Select class="m-1" items={arg.optional ? booleanOptionalSelections : booleanSelections} bind:value={args[arg.name]}/>
+                        {:else if arg.type === "number"}
+                            <NumberInput class="m-1" placeholder={arg.name}  bind:value={args[arg.name]}/>
+                        {:else}
+                            <Input class="m-1" placeholder={arg.name} bind:value={args[arg.name]}/>
+                        {/if}
                     </td>
                 </tr>
             {/each}
