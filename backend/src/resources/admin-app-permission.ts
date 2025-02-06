@@ -4,6 +4,7 @@ import { AppPermission, permissionCreateSchema, permissionSchema, permissionUpda
 import { createAppPermission, dropAppPermission, getAppPermission, selectAppPermissions, setAppPermission } from "@/services/app-permission"
 import { getApp } from "@/services/app"
 import { ErrorCode, ServerError } from "@/utils/error"
+import config from "@/config"
 
 export async function listAppPermissions(ctx: Context) {
     const app = await getApp(ctx.params.appId)
@@ -45,7 +46,13 @@ export async function patchAppPermission(ctx: Context) {
 
     const form = permissionUpdateSchema.parse(ctx.request.body)
 
-    //TODO 需要校验参数列表是否唯一
+    if(form.arguments) {
+        if(new Set(form.arguments.map(arg => arg.name)).size < form.arguments.length) {
+            ctx.response.body = {message: "arguments duplicated"}
+            ctx.response.status = 400
+            return
+        }
+    }
 
     await setAppPermission(appPermission.id, form)
 
@@ -54,8 +61,6 @@ export async function patchAppPermission(ctx: Context) {
 
 export async function deleteAppPermission(ctx: Context) {
     const appPermission = await getDetail(ctx)
-
-    //TODO 阻止删除根App的根权限
 
     await dropAppPermission(appPermission.id)
 
@@ -71,6 +76,9 @@ async function getDetail(ctx: Context): Promise<AppPermission> {
     const appPermission = await getAppPermission(ctx.params.id)
     if(appPermission === null || appPermission.appId !== app.id) {
         throw new ServerError(404, ErrorCode.NotFound, "AppPermission not found")
+    }
+    if(ctx.method !== "GET" && app.appId === config.app.appId && (appPermission.name === "ADMIN" || appPermission.name === "APP_ADMIN")) {
+        throw new ServerError(403, ErrorCode.RootProtected, "Cannot alter/delete Auth-Service app's default permissions.")
     }
     return appPermission
 }

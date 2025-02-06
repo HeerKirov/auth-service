@@ -17,14 +17,9 @@ export async function selectUserAppPermissions(userId: number, appId: number): P
 }
 
 export async function upsertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>): Promise<UserAppPermission> {
-    const exists = await db.from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId}).first()
+    const exists = await db.from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId, arguments: JSON.stringify(args) as any}).first()
     if(exists === undefined) {
-        const createTime = new Date()
-        const [{ id }] = await db.from<UserAppPermission>("user_app_permission").insert({
-            appId, userId, permissionId, arguments: JSON.stringify(args) as any, createTime
-        }).returning(["id"])
-
-        return {id, appId, userId, permissionId, arguments: args, createTime}
+        return await insertUserAppPermission(userId, appId, permissionId, args)
     }else{
         await db.from<UserAppPermission>("user_app_permission").where({id: exists.id}).update({arguments: JSON.stringify(args) as any})
 
@@ -32,6 +27,15 @@ export async function upsertUserAppPermission(userId: number, appId: number, per
     }
 }
 
-export async function dropUserAppPermission(userId: number, appId: number, permissionId: number): Promise<number> {
-    return db.from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId}).delete()
+export async function insertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>): Promise<UserAppPermission> {
+    const createTime = new Date()
+    const [{ id }] = await db.from<UserAppPermission>("user_app_permission").insert({
+        appId, userId, permissionId, arguments: JSON.stringify(args) as any, createTime
+    }).returning(["id"])
+
+    return {id, appId, userId, permissionId, arguments: args, createTime}
+}
+
+export async function dropUserAppPermissions(ids: number[]): Promise<number> {
+    return db.from<UserAppPermission>("user_app_permission").where("id", "in", ids).delete()
 }
