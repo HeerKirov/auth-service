@@ -129,7 +129,9 @@ export async function token(ctx: Context) {
  * 登出。实际作用是移除cookie中的token。
  */
 export async function logout(ctx: Context) {
-    ctx.cookies.set("token")
+    const header = ctx.request.headers["refresh-token-name"]
+    const cookieName = header !== undefined ? (typeof header === "string" ? header : header[0]) : "token"
+    ctx.cookies.set(cookieName)
 
     ctx.response.body = {success: true}
     ctx.response.status = 204
@@ -142,7 +144,9 @@ async function tokenForThisApp(ctx: Context, user: User) {
     const accessToken = await createAccessToken(user, app!)
 
     //默认情况下，refreshToken直接写入cookie，不会在返回值中显现
-    ctx.cookies.set("token", refreshToken, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
+    const header = ctx.request.headers["refresh-token-name"]
+    const cookieName = header !== undefined ? (typeof header === "string" ? header : header[0]) : "token"
+    ctx.cookies.set(cookieName, refreshToken, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
     if(config.debug) {
         //而在debug开启的模式下，会改变返回值，在其中加入refreshToken，方便调试
         ctx.response.body = {

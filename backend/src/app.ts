@@ -1,6 +1,7 @@
 import Koa from "koa"
 import { bodyParser } from "@koa/bodyparser"
 import { auth } from "@/middleware/auth"
+import { logHandler } from "@/middleware/logger"
 import { corsMiddleware } from "@/middleware/cors"
 import { permission } from "@/middleware/permission"
 import { errorHandler } from "@/middleware/error-handler"
@@ -10,6 +11,7 @@ import config from "@/config"
 
 const app = new Koa()
 
+app.use(logHandler)
 app.use(corsMiddleware)
 app.use(errorHandler)
 app.use(bodyParser())

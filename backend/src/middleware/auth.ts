@@ -110,7 +110,9 @@ async function verifyRefreshToken(token: string, strict: boolean, ctx: Context):
     const now = Date.now()
     if(record.lastRefreshTime.getTime() - now > await getSetting(SETTINGS.REFRESH_TOKEN_AUTO_FLUSH)) {
         const token = await flushRefreshToken(record, now)
-        ctx.cookies.set("token", token.token, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
+        const header = ctx.request.headers["refresh-token-name"]
+        const cookieName = header !== undefined ? (typeof header === "string" ? header : header[0]) : "token"
+        ctx.cookies.set(cookieName, token.token, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
     }
 
     return exportState(user, app)

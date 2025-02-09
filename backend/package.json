@@ -14,7 +14,7 @@
     "@koa/bodyparser": "^5.1.1",
     "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.0",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.8",
     "@types/koa": "^2.15.0",
     "@types/koa__cors": "^5.0.0",

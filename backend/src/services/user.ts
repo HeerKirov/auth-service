@@ -1,4 +1,4 @@
-import { compare, hash } from "bcrypt"
+import { compare, hash } from "bcryptjs"
 import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
 import { UserFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
