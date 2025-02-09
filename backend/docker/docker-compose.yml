@@ -1,0 +1,26 @@
+name: auth-service
+services:
+  api:
+    image: auth-service:dev
+    ports:
+      - "3000:3000"
+    environment:
+      APP_JWT_SECRET: ${AUTH_SERVICE_APP_JWT_SECRET}
+      APP_DOMAINS: ${AUTH_SERVICE_APP_DOMAINS}
+      ADMIN_PASSWORD: ${AUTH_SERVICE_ADMIN_PASSWORD}
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: auth_service
+      DB_USER: ${POSTGRES_USERNAME}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+  migrate:
+    image: auth-service:dev
+    command: [ "npx", "knex", "migrate:latest", "--env", "production" ]
+    environment:
+      NODE_ENV: production
+      DB_HOST: ${POSTGRES_HOST}
+      DB_PORT: ${POSTGRES_PORT}
+      DB_NAME: auth_service
+      DB_USER: ${POSTGRES_USERNAME}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: "no"

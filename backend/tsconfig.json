@@ -21,6 +21,8 @@
   },
   "include": [
     "knexfile",
+    "migrations/**/*.ts",
+    "build/**/*.ts",
     "src/**/*.ts"
   ],
   "exclude": [
