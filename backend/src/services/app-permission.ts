@@ -3,7 +3,7 @@ import { UserAppPermission } from "@/schema/user-app"
 import { OffsetAndLimitFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
 import { ErrorCode, ServerError } from "@/utils/error"
-import { db } from "@/utils/db"
+import { db, Knex } from "@/utils/db"
 
 export async function selectAppPermissions(appId: number, filter: OffsetAndLimitFilter): Promise<ListResult<AppPermission>> {
     const builder = db.from<AppPermission>("app_permission").where({appId}).orderBy("createTime", "ASC")
@@ -33,16 +33,16 @@ export async function createAppPermission(appId: number, p: PermissionCreateSche
     return {id, appId, ...p, createTime}
 }
 
-export async function upsertAppPermission(appId: number, p: PermissionCreateSchema): Promise<AppPermission> {
-    const exists = await db.from<AppPermission>("app_permission").where({appId, name: p.name}).first()
+export async function upsertAppPermission(appId: number, p: PermissionCreateSchema, trx?: Knex.Transaction): Promise<AppPermission> {
+    const exists = await (trx ?? db).from<AppPermission>("app_permission").where({appId, name: p.name}).first()
     if(exists) {
-        await db.from<AppPermission>("app_permission").where({id: exists.id}).update({displayName: p.displayName, arguments: JSON.stringify(p.arguments) as any}).returning(["id"])
+        await (trx ?? db).from<AppPermission>("app_permission").where({id: exists.id}).update({displayName: p.displayName, arguments: JSON.stringify(p.arguments) as any}).returning(["id"])
 
         return {...exists, displayName: p.displayName, arguments: p.arguments}
     }else{
         const createTime = new Date()
 
-        const [{ id }] = await db.from<AppPermission>("app_permission").insert({
+        const [{ id }] = await (trx ?? db).from<AppPermission>("app_permission").insert({
             appId, ...p, createTime, arguments: JSON.stringify(p.arguments) as any
         }).returning(["id"])
 

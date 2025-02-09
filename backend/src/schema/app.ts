@@ -12,8 +12,8 @@ export const appAdminCreateSchema = z.object({
 
 export const appAdminPatchSchema = z.object({
     appName: z.string().nonempty().max(128).optional(),
-    description: z.string().max(256).optional(),
-    url: z.string().max(256).optional(),
+    description: z.string().max(512).optional(),
+    url: z.string().max(512).optional(),
     avatar: z.string().nullable().optional(),
     enabled: z.boolean().optional(),
     domains: z.array(z.string()).optional(),

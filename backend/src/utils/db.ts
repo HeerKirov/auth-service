@@ -1,4 +1,4 @@
-import { knex } from "knex"
+import { knex, Knex } from "knex"
 import config from "@/config"
 
 export const db = knex(config.db)
@@ -21,3 +21,5 @@ export function constructJoinNest(result: any): any {
     }
     return ret
 }
+
+export type { Knex }

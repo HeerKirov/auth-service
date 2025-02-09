@@ -5,7 +5,7 @@ import { App, AppCreateSchema, AppUpdateSchema } from "@/schema/app"
 import { UserAppPermission, UserAppRelation } from "@/schema/user-app"
 import { AppFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
-import { db } from "@/utils/db"
+import { db, Knex } from "@/utils/db"
 import { ErrorCode, ServerError } from "@/utils/error"
 import config from "@/config"
 
@@ -26,8 +26,8 @@ export async function selectApps(filter: AppFilter): Promise<ListResult<App>> {
     return {total, data}
 }
 
-export async function createApp(app: AppCreateSchema): Promise<App> {
-    const exists = await db("app").where({"appId": app.appId}).first()
+export async function createApp(app: AppCreateSchema, trx?: Knex.Transaction): Promise<App> {
+    const exists = await (trx ?? db)("app").where({"appId": app.appId}).first()
     if (exists) {
         throw new ServerError(400, ErrorCode.AlreadyExists, "App already exists")
     }
@@ -35,7 +35,7 @@ export async function createApp(app: AppCreateSchema): Promise<App> {
     const appSecret = app.appId !== config.app.appId ? randomBytes(32).toString("base64") : ""
     const createTime = new Date()
 
-    const [{ id }] = await db.from<App>("app").insert({
+    const [{ id }] = await (trx ?? db).from<App>("app").insert({
         "appId": app.appId,
         "appName": app.appName,
         "appSecret": appSecret,

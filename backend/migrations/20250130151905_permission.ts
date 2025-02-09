@@ -37,7 +37,7 @@ export async function down(knex: Knex): Promise<void> {
 
     await knex.schema.alterTable("user_app_permission", (table) => {
         table.dropIndex(["appId", "userId"], "idx__user_app_permission__app_user")
-        table.unique(["userId", "appId"], { indexName: "idx_user_app_permission_relation" })
+        table.index(["userId", "appId"], "idx_user_app_permission_relation")
 
         table.dropColumn("createTime")
         table.dropColumn("arguments")

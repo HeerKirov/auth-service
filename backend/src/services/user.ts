@@ -3,7 +3,7 @@ import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
 import { UserFilter } from "@/schema/filters"
 import { ListResult } from "@/schema/general"
 import { ErrorCode, ServerError } from "@/utils/error"
-import { db } from "@/utils/db"
+import { db, Knex } from "@/utils/db"
 
 export async function selectUsers(filter: UserFilter): Promise<ListResult<User>> {
     const builder = db.from<User>("user").orderBy("createTime", "desc").where("deleted", false)
@@ -22,8 +22,8 @@ export async function selectUsers(filter: UserFilter): Promise<ListResult<User>>
     return {total, data}
 }
 
-export async function createUser(user: UserCreateSchema): Promise<User> {
-    const exists = await db("user").where({"username": user.username, "deleted": false}).first()
+export async function createUser(user: UserCreateSchema, trx?: Knex.Transaction): Promise<User> {
+    const exists = await (trx ?? db)("user").where({"username": user.username, "deleted": false}).first()
     if (exists) {
         throw new ServerError(400, ErrorCode.AlreadyExists, "User already exists")
     }
@@ -31,7 +31,7 @@ export async function createUser(user: UserCreateSchema): Promise<User> {
     const hashedPassword = await hash(user.password, 10)
     const now = new Date()
 
-    const [{ id }] = await db.from<User>("user").insert({
+    const [{ id }] = await (trx ?? db).from<User>("user").insert({
         "username": user.username,
         "password": hashedPassword,
         "displayName": user.displayName,

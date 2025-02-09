@@ -18,7 +18,7 @@ export async function up(knex: Knex): Promise<void> {
         table.increments("id").primary()
         table.integer("userId").notNullable()
         table.integer("appId").notNullable()
-        table.string("token", 128).notNullable()
+        table.string("token", 256).notNullable()
         table.timestamp("createTime").notNullable()
         table.timestamp("expireTime").notNullable()
         table.timestamp("lastRefreshTime").notNullable()

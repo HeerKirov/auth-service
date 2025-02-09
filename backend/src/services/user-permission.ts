@@ -1,6 +1,6 @@
 import { UserAppPermission, userAppPermissionFields } from "@/schema/user-app"
 import { AppPermission, appPermissionFields } from "@/schema/app-permission"
-import { db, constructJoinNest, projectJoinNest } from "@/utils/db"
+import { db, constructJoinNest, projectJoinNest, Knex } from "@/utils/db"
 
 export async function selectUserAppPermissions(userId: number, appId: number): Promise<{appPermission: AppPermission, userAppPermission: UserAppPermission}[]> {
     const result = await db.from<UserAppPermission>("user_app_permission")
@@ -16,12 +16,12 @@ export async function selectUserAppPermissions(userId: number, appId: number): P
     return result.map(constructJoinNest)
 }
 
-export async function upsertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>): Promise<UserAppPermission> {
-    const exists = await db.from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId, arguments: JSON.stringify(args) as any}).first()
+export async function upsertUserAppPermission(userId: number, appId: number, permissionId: number, args: Record<string, unknown>, trx?: Knex.Transaction): Promise<UserAppPermission> {
+    const exists = await (trx ?? db).from<UserAppPermission>("user_app_permission").where({userId, appId, permissionId}).first()
     if(exists === undefined) {
         return await insertUserAppPermission(userId, appId, permissionId, args)
     }else{
-        await db.from<UserAppPermission>("user_app_permission").where({id: exists.id}).update({arguments: JSON.stringify(args) as any})
+        await (trx ?? db).from<UserAppPermission>("user_app_permission").where({id: exists.id}).update({arguments: JSON.stringify(args) as any})
 
         return {...exists, arguments: args}
     }
