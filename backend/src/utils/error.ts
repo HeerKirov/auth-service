@@ -58,4 +58,8 @@ export const ErrorCode = {
      * 400: 想要创建的资源已经存在。
      */
     AlreadyExists: "ALREADY_EXISTS",
+    /**
+     * 400: 错误的表单参数。
+     */
+    InvalidParameter: "INVALID_PARAMETER",
 }

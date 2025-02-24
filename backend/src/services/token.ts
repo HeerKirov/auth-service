@@ -68,16 +68,18 @@ export async function deleteRefreshTokenByUser(userId: number): Promise<void> {
     await db.from<RefreshToken>("refresh_token").where({userId}).del()
 }
 
-export async function createAccessToken(user: User, app: App): Promise<string> {
+export async function createAccessToken(user: User, app: App): Promise<{token: string, expire: number}> {
     const permissions = (await selectUserAppPermissions(user.id, app.id)).map(p => userAppPermissionSchemaForToken.parse(p))
     const jwtSecret = app.appId === config.app.appId ? config.app.jwtSecret : app.appSecret
     const createTime = Date.now()
+    const expire = await getSetting(SETTINGS.ACCESS_TOKEN_DELAY)
     const payload: JsonWebTokenPayload = {
         username: user.username,
         appId: app.appId,
         permissions,
         tokenCreateTime: createTime,
-        tokenExpireTime: createTime + await getSetting(SETTINGS.ACCESS_TOKEN_DELAY)
+        tokenExpireTime: createTime + expire
     }
-    return jwt.sign(payload, jwtSecret, { expiresIn: "1h" })
+    const token = jwt.sign(payload, jwtSecret, { expiresIn: `${expire}ms` })
+    return {token, expire}
 }

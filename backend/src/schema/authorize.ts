@@ -13,9 +13,13 @@ export const authorizeSchema = z.object({
 })
 
 export const authorizeVerifySchema = z.object({
-    appId: z.string(),
-    appSecret: z.string(),
-    authorizationCode: z.string()
+    clientId: z.string(),
+    clientSecret: z.string(),
+    code: z.string()
+})
+
+export const refreshTokenSchema = z.object({
+    refreshToken: z.string()
 })
 
 export interface State {

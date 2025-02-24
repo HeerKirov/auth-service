@@ -15,8 +15,8 @@ import config from "@/config"
 export async function auth(ctx: Context, next: Next) {
     const { path } = ctx
 
-    // 不需要认证
-    if (path === "/login" || path === "/register" || path === "/verify") {
+    // 不需要认证。/token是OAuth API，其认证在resources中进行
+    if (path === "/login" || path === "/register" || path === "/token") {
         return await next()
     }
 
@@ -28,16 +28,6 @@ export async function auth(ctx: Context, next: Next) {
             return await next()
         }else if(authType.type === "Bearer") {
             ctx.state = await verifyRefreshToken(authType.token, true, ctx)
-            return await next()
-        }
-        throw new ServerError(401, ErrorCode.Unauthorized, "Unauthorized")
-    }
-
-    // 仅允许Refresh Token认证。允许其他app访问
-    if (path === "/token" || path === "/logout") {
-        const authType = analyseAuthType(ctx, { refreshToken: true })
-        if (authType.type === "Bearer") {
-            ctx.state = await verifyRefreshToken(authType.token, false, ctx)
             return await next()
         }
         throw new ServerError(401, ErrorCode.Unauthorized, "Unauthorized")
@@ -57,24 +47,25 @@ export async function auth(ctx: Context, next: Next) {
     return await next()
 }
 
-function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {basic?: boolean, accessToken?: boolean, refreshToken?: boolean} = {}) {
+export function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {basic?: boolean, accessToken?: boolean, refreshToken?: boolean} = {}) {
     const { headers, cookies } = ctx
     if(basic && headers.authorization?.startsWith("Basic ")) {
         const base64Credentials = headers.authorization.split(" ")[1]
         const credentials = Buffer.from(base64Credentials, "base64").toString("utf-8")
         const [username, password] = credentials.split(":")
-        return {type: "Basic" as const, username, password}
-    }else if(refreshToken) {
-        const token = cookies.get("token")
-        if(token) {
-            return {type: "Bearer" as const, token}
-        }
-    }else if((accessToken || refreshToken) && headers.authorization?.startsWith("Bearer ")) {
-        const refreshToken = headers.authorization.split(" ")[1]
-        return {type: "Bearer" as const, token: refreshToken}
+        return {type: "Basic", username, password} as const
     }
-
-    return {type: "Unauthorized" as const}
+    if(refreshToken) {
+        const token = cookies.get("refresh-token")
+        if(token) {
+            return {type: "Bearer", token} as const
+        }
+    }
+    if((accessToken || refreshToken) && headers.authorization?.startsWith("Bearer ")) {
+        const refreshToken = headers.authorization.split(" ")[1]
+        return {type: "Bearer", token: refreshToken} as const
+    }
+    return {type: "Unauthorized"} as const
 }
 
 async function verifyBasicAuth(username: string, password: string): Promise<State> {
@@ -88,7 +79,7 @@ async function verifyBasicAuth(username: string, password: string): Promise<Stat
     return exportState(user, app)
 }
 
-async function verifyRefreshToken(token: string, strict: boolean, ctx: Context): Promise<State> {
+export async function verifyRefreshToken(token: string, strict: boolean, ctx: Context): Promise<State> {
     const record = await getRefreshToken(token)
     if(record === null) {
         throw new ServerError(401, ErrorCode.Unauthorized, "Token not found")
@@ -111,7 +102,7 @@ async function verifyRefreshToken(token: string, strict: boolean, ctx: Context):
     if(record.lastRefreshTime.getTime() - now > await getSetting(SETTINGS.REFRESH_TOKEN_AUTO_FLUSH)) {
         const token = await flushRefreshToken(record, now)
         const header = ctx.request.headers["refresh-token-name"]
-        const cookieName = header !== undefined ? (typeof header === "string" ? header : header[0]) : "token"
+        const cookieName = header !== undefined ? (typeof header === "string" ? header : header[0]) : "refresh-token"
         ctx.cookies.set(cookieName, token.token, { httpOnly: true, maxAge: await getSetting(SETTINGS.REFRESH_TOKEN_DELAY) })
     }
 
