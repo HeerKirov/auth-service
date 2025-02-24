@@ -54,6 +54,12 @@ export const myAppSchema = z.object({
     userAppPermissions
 }))
 
+export const userInAppSchema = z.object({
+    user: userSchema,
+    userAppRelation: userAppRelationSchema,
+}).transform(({ user, userAppRelation }) => ({...user, userAppRelation,}))
+
+
 export interface UserAppRelation {
     id: number
     appId: number

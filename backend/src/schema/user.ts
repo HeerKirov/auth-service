@@ -1,5 +1,4 @@
 import { z } from "zod"
-import { userAppRelationSchema } from "@/schema/user-app"
 
 export const userCreateSchema = z.object({
     username: z.string().nonempty().max(128),
@@ -42,11 +41,6 @@ export const userSchema = z.object({
     createTime: z.date(),
     lastRefreshTime: z.date().nullable(),
 })
-
-export const userInAppSchema = z.object({
-    user: userSchema,
-    userAppRelation: userAppRelationSchema,
-}).transform(({ user, userAppRelation }) => ({...user, userAppRelation,}))
 
 export interface User {
     id: number

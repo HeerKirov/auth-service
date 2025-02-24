@@ -1,6 +1,7 @@
 import { Context } from "koa"
 import { State } from "@/schema/authorize"
-import { userPatchSchema, userChangePasswordSchema, userSchema, userInAppSchema, userInAppPatchSchema } from "@/schema/user"
+import { userInAppSchema } from "@/schema/user-app"
+import { userPatchSchema, userChangePasswordSchema, userSchema, userInAppPatchSchema } from "@/schema/user"
 import { compareUser, getUserById, setUser } from "@/services/user"
 import { getUserAppRelation, upsertUserAppFields } from "@/services/user-app"
 import { deleteRefreshTokenByUser } from "@/services/token"

@@ -49,7 +49,7 @@ export async function auth(ctx: Context, next: Next) {
 
 export function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken }: {basic?: boolean, accessToken?: boolean, refreshToken?: boolean} = {}) {
     const { headers, cookies } = ctx
-    if(basic && headers.authorization?.startsWith("Basic ")) {
+    if(basic && headers.authorization?.toLowerCase().startsWith("basic ")) {
         const base64Credentials = headers.authorization.split(" ")[1]
         const credentials = Buffer.from(base64Credentials, "base64").toString("utf-8")
         const [username, password] = credentials.split(":")
@@ -61,7 +61,7 @@ export function analyseAuthType(ctx: Context, { basic, accessToken, refreshToken
             return {type: "Bearer", token} as const
         }
     }
-    if((accessToken || refreshToken) && headers.authorization?.startsWith("Bearer ")) {
+    if((accessToken || refreshToken) && headers.authorization?.toLowerCase().startsWith("bearer ")) {
         const refreshToken = headers.authorization.split(" ")[1]
         return {type: "Bearer", token: refreshToken} as const
     }
