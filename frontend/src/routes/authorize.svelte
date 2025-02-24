@@ -6,9 +6,10 @@ import { LoginPage, RegisterPage } from "@/layouts"
 import { auth, preloadAuthorization } from "@/lib/api"
 
 let mode: "loading" | "login" | "register" | "authorize" = $state("loading")
-let appId: string = $state($params.appId)
-let redirectURI: string = $state($params.redirectURI)
-let st: string = $state($params.state)
+let responseType: string = $state($params["response_type"]?.toLowerCase() ?? "")
+let appId: string = $state($params["client_id"])
+let redirectURI: string = $state($params["redirect_uri"])
+let st: string = $state($params["state"])
 let error: string = $state("")
 
 const onClickRegister = () => mode = "register"
@@ -20,7 +21,7 @@ const doAuthorize = async () => {
         const ai = encodeURIComponent(appId)
         const ac = encodeURIComponent(r.data.authorizationCode)
         const state = st ? encodeURIComponent(st) : ""
-        window.location.replace(`${redirectURI}?appId=${ai}&authorizationCode=${ac}&state=${state}`)
+        window.location.replace(`${redirectURI}?client_id=${ai}&code=${ac}&state=${state}`)
     }else if(r.error === "NOT_FOUND") {
         error = "非法认证：未授权的应用程序。"
     }else if(r.error === "INVALID_REDIRECT_URI") {
@@ -37,6 +38,9 @@ const doAuthorize = async () => {
 onMount(async () => {
     if(!appId || !redirectURI) {
         error = "非法认证：未正确指定认证参数。"
+        return
+    }else if(responseType !== "code") {
+        error = `不支持的授权类型: ${responseType}`
         return
     }
     const authorized = await preloadAuthorization({onlyRefreshToken: true})

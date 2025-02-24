@@ -4,7 +4,7 @@ import { slide } from "svelte/transition"
 import { ChartNoAxesGantt, KeySquare, LayoutPanelLeft, LogOut, ShieldBan, UserCog } from "lucide-svelte"
 import { Button, Input, PatchForm } from "@/components"
 import { auth, user, type User } from "@/lib/api"
-import { hasPermission } from "@/lib/store/user.svelte"
+import { hasPermission, setAccessToken } from "@/lib/store/user.svelte"
 import { toDateString } from "@/utils/date"
 import { routePush } from "@/utils/route"
 import empty from "@/assets/empty.jpg"
@@ -41,6 +41,7 @@ const gotoChangePassword = () => routePush("/my/password")
 
 const logout = async () => {
     await auth.logout()
+    setAccessToken(null)
     routePush("/login")
 }
 

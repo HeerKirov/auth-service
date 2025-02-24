@@ -3,7 +3,7 @@ import { User } from "./user"
 
 export const login = (form: LoginForm) => fetchRequest<TokenResponse, "INVALID_USERNAME_OR_PASSWORD">("/login", {method: "POST", authorization: false, body: JSON.stringify(form)})
 
-export const logout = () => fetchRequest<undefined>("/logout", {method: "POST"})
+export const logout = () => fetchRequest<undefined>("/token?grantType=logout", {method: "POST"})
 
 export const register = (form: RegisterForm) => fetchRequest<TokenResponse, "ALREADY_EXISTS">("/register", {method: "POST", authorization: false, body: JSON.stringify(form)})
 

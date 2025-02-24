@@ -41,7 +41,7 @@ export async function preloadAuthorization(options?: {onlyRefreshToken: boolean}
         }
     }
 
-    const r = await fetchRequest<{accessToken: string}>("/token", {method: "POST", authorization: false})
+    const r = await fetchRequest<{accessToken: string}>("/token?grantType=refreshToken", {method: "POST", authorization: false})
     if(r.ok) {
         setAccessToken(r.data.accessToken)
         return {ok: true, data: r.data.accessToken}
