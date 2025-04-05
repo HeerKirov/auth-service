@@ -40,9 +40,12 @@ export interface AuthorizeResponse {
 }
 
 export interface JsonWebTokenPayload {
+    sub: string
+    iss: string
+    aud: string
+    jti: string
+
     username: string
-    appId: string
+    name: string
     permissions: {name: string, args: Record<string, unknown>}[]
-    tokenCreateTime: number
-    tokenExpireTime: number
 }
