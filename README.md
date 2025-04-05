@@ -131,14 +131,19 @@ POST /token?grant_type=authorization_code
 access token的payload部分结构如下所示：
 ```typescript
 interface JsonWebTokenPayload {
-    username: string
-    appId: string
-    permissions: {
+    sub: string //用户标识, UUID
+    iss: string //签发者标识, https://auth-service.com
+    aud: string //签发目标, appId
+    jti: string //防重放攻击, UUID
+    exp: number //过期时间戳(秒)
+    iat: number //签发时间戳(秒)
+
+    username: string //扩展字段: 用户名
+    name: string     //扩展字段: 用户显示名称
+    permissions: {   //扩展字段: 用户权限信息
         name: string
         args: Record<string, unknown>
     }[]
-    tokenCreateTime: number
-    tokenExpireTime: number
 }
 ```
 可以通过payload获得用户信息和该用户持有的权限信息。
