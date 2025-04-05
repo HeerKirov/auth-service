@@ -31,11 +31,14 @@ export interface State {
 }
 
 export interface JsonWebTokenPayload {
+    sub: string
+    iss: string
+    aud: string
+    jti: string
+
     username: string
-    appId: string
+    name: string
     permissions: Permission[]
-    tokenCreateTime: number
-    tokenExpireTime: number
 }
 
 export interface Permission {

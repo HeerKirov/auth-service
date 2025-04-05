@@ -8,6 +8,7 @@ export default {
     port: process.env.PORT || 3000,
     debug: process.env.DEBUG?.toLowerCase() === "true",
     app: {
+        iss: process.env.APP_ISS || (process.env.APP_DOMAINS || "").split(",")[0].trim(),
         jwtSecret: process.env.APP_JWT_SECRET || "your_secret_key",
         domains: (process.env.APP_DOMAINS || "").split(",").map(n => n.trim()),
         appId: process.env.APP_ID || "auth-service",

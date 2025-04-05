@@ -131,7 +131,7 @@ async function verifyAccessToken(token: string, strict: boolean): Promise<State>
     if(decode === null) {
         throw new ServerError(401, ErrorCode.Unauthorized, "Token cannot be decoded")
     }
-    const { username, appId, permissions } = decode as JsonWebTokenPayload
+    const { username, aud: appId, permissions } = decode as JsonWebTokenPayload
 
     let user: User | null = null
     let app: App | null = null

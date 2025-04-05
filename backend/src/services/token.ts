@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken"
+import { randomUUID } from "crypto"
 import { User } from "@/schema/user"
 import { db } from "@/utils/db"
 import { App } from "@/schema/app"
@@ -71,14 +72,15 @@ export async function deleteRefreshTokenByUser(userId: number): Promise<void> {
 export async function createAccessToken(user: User, app: App): Promise<{token: string, expire: number}> {
     const permissions = (await selectUserAppPermissions(user.id, app.id)).map(p => userAppPermissionSchemaForToken.parse(p))
     const jwtSecret = app.appId === config.app.appId ? config.app.jwtSecret : app.appSecret
-    const createTime = Date.now()
     const expire = await getSetting(SETTINGS.ACCESS_TOKEN_DELAY)
     const payload: JsonWebTokenPayload = {
+        sub: user.uuid,
+        aud: app.appId,
+        iss: config.app.iss,
+        jti: randomUUID(),
         username: user.username,
-        appId: app.appId,
-        permissions,
-        tokenCreateTime: createTime,
-        tokenExpireTime: createTime + expire
+        name: user.displayName,
+        permissions
     }
     const token = jwt.sign(payload, jwtSecret, { expiresIn: `${expire}ms` })
     return {token, expire}

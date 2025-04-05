@@ -34,16 +34,18 @@ export const userAdminPatchSchema = z.object({
 })
 
 export const userSchema = z.object({
+    uuid: z.string().max(128),
     username: z.string(),
     displayName: z.string(),
     avatar: z.string().nullable(),
     enabled: z.boolean(),
     createTime: z.date(),
     lastRefreshTime: z.date().nullable(),
-})
+}).transform(({ uuid, ...e }) => ({...e, id: uuid}))
 
 export interface User {
     id: number
+    uuid: string
     username: string
     password: string
     displayName: string
@@ -58,4 +60,4 @@ export type UserCreateSchema = z.infer<typeof userCreateSchema>
 
 export type UserUpdateSchema = z.infer<typeof userAdminPatchSchema> & Partial<z.infer<typeof userAdminChangePasswordSchema>>
 
-export const userFields = ["id", "username", "password", "displayName", "avatar", "enabled", "deleted", "createTime", "lastRefreshTime"] as const
+export const userFields = ["id", "uuid", "username", "password", "displayName", "avatar", "enabled", "deleted", "createTime", "lastRefreshTime"] as const
