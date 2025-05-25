@@ -34,7 +34,7 @@ export const userAdminPatchSchema = z.object({
 })
 
 export const userSchema = z.object({
-    uuid: z.string().max(128),
+    uuid: z.string().max(24),
     username: z.string(),
     displayName: z.string(),
     avatar: z.string().nullable(),

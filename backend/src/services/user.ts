@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto"
+import { nanoid } from "nanoid"
 import { compare, hash } from "bcryptjs"
 import { User, UserCreateSchema, UserUpdateSchema } from "@/schema/user"
 import { UserFilter } from "@/schema/filters"
@@ -29,7 +29,7 @@ export async function createUser(user: UserCreateSchema, trx?: Knex.Transaction)
         throw new ServerError(400, ErrorCode.AlreadyExists, "User already exists")
     }
 
-    const uuid = randomUUID()
+    const uuid = nanoid()
     const hashedPassword = await hash(user.password, 10)
     const now = new Date()
 

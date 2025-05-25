@@ -131,7 +131,7 @@ POST /token?grant_type=authorization_code
 access token的payload部分结构如下所示：
 ```typescript
 interface JsonWebTokenPayload {
-    sub: string //用户标识, UUID
+    sub: string //用户标识, nanoID(len=21)
     iss: string //签发者标识, https://auth-service.com
     aud: string //签发目标, appId
     jti: string //防重放攻击, UUID
