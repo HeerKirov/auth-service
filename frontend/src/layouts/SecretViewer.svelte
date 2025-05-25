@@ -2,7 +2,7 @@
 import { onMount } from "svelte"
 import { Recycle, X } from "lucide-svelte"
 import { admin } from "@/lib/api"
-import { Button } from "@/components"
+import { Button, ClipboardButton } from "@/components"
 
 let { appId }: {
     appId: string
@@ -33,7 +33,10 @@ const regenerate = async () => {
     {#if !regenerateCheck}
         <p class="text-sm text-gray-400 mb-1">将App Secret与App ID一同配置在登录服务API的访问配置中。</p>
         <div class="overflow-x-auto max-w-[95vw]">
-            <pre>{data}</pre>
+            <div class="flex items-center justify-center gap-2">
+                <pre>{data}</pre>
+                <ClipboardButton {data}/>
+            </div>
         </div>
         <Button class="text-sm" mode="underline" color="warning" onclick={() => regenerateCheck = true}><Recycle class="mr-1" size={18}/>重新生成App Secret</Button>
     {:else}

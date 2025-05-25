@@ -7,6 +7,7 @@ import Anchor from "./Anchor.svelte"
 import PatchForm from "./PatchForm.svelte"
 import PageRouter from "./PageRouter.svelte"
 import ListInputEditor from "./ListInputEditor.svelte"
+import ClipboardButton from "./ClipboardButton.svelte"
 
 export { Anchor, Button, Input, NumberInput, Select, CheckBox }
-export { PageRouter, PatchForm, ListInputEditor }
+export { PageRouter, PatchForm, ListInputEditor, ClipboardButton }
