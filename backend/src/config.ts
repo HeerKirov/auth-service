@@ -29,5 +29,15 @@ export default {
             database: process.env.DB_NAME,
         },
         useNullAsDefault: true
+    },
+    oss: {
+        accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+        accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+        bucket: process.env.OSS_BUCKET,
+        region: process.env.OSS_REGION || 'oss-cn-shanghai',
+        internal: process.env.OSS_INTERNAL?.toLowerCase() === 'true',
+        secure: process.env.OSS_SECURE?.toLowerCase() === 'true',
+        endpoint: process.env.OSS_ENDPOINT,
+        basePath: process.env.OSS_BASE_PATH || ''
     }
 }

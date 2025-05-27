@@ -1,9 +1,11 @@
+import fs from "fs"
 import { Context } from "koa"
 import { appFilter } from "@/schema/filters"
 import { appAdminCreateSchema, appAdminPatchSchema, appSchema, appSecretSchema } from "@/schema/app"
 import { createApp, getApp, getAppById, regenerateAppSecret, selectApps, setApp, dropApp } from "@/services/app"
 import { deleteRefreshTokenByApp } from "@/services/token"
 import { ErrorCode, ServerError } from "@/utils/error"
+import { deleteFile, existFile, uploadFile } from "@/utils/oss"
 import config from "@/config"
 
 export async function listApps(ctx: Context) {
@@ -84,4 +86,35 @@ export async function patchAppSecret(ctx: Context) {
     await deleteRefreshTokenByApp(app.id)
 
     ctx.response.body = appSecretSchema.parse(await getAppById(app.id))
+}
+
+export async function uploadAppAvatar(ctx: Context) {
+    const app = await getApp(ctx.params.appId)
+    if(app === null) {
+        throw new ServerError(404, ErrorCode.NotFound, "App not found")
+    }
+
+    const file = ctx.request.files?.["file"]
+    if(!file) {
+        throw new ServerError(400, ErrorCode.InvalidParameter, "FormData 'file' is required.")
+    }
+    const f = file instanceof Array ? file[0] : file
+    try {
+        if(!f.mimetype || !f.mimetype.startsWith("image/")) {
+            throw new ServerError(400, ErrorCode.InvalidParameter, "Only image file is supported.")
+        }
+        const ext = f.mimetype.substring("image/".length)
+
+        const objectName = `${app.id}-${Date.now()}.${ext}`
+        await uploadFile(`avatar/app/${objectName}`, f.filepath, {})
+        await setApp(app.id, {avatar: objectName})
+
+        if(app.avatar !== null && await existFile(`avatar/app/${objectName}`)) {
+            await deleteFile(`avatar/app/${app.avatar}`)
+        }
+
+        ctx.response.body = {avatar: `avatar/app/${objectName}`}
+    }finally {
+        await fs.promises.rm(f.filepath)
+    }
 }

@@ -16,7 +16,7 @@ export async function auth(ctx: Context, next: Next) {
     const { path } = ctx
 
     // 不需要认证。/token是OAuth API，其认证在resources中进行
-    if (path === "/login" || path === "/register" || path === "/token") {
+    if (path === "/login" || path === "/register" || path === "/token" || path.startsWith("/avatar")) {
         return await next()
     }
 

@@ -4,17 +4,14 @@ export const userCreateSchema = z.object({
     username: z.string().nonempty().max(128),
     password: z.string().nonempty().max(64),
     displayName: z.string().max(128),
-    avatar: z.string().nullable().optional(),
 })
 
 export const userPatchSchema = z.object({
     displayName: z.string().max(128).optional(),
-    avatar: z.string().nullable().optional(),
 })
 
 export const userInAppPatchSchema = z.object({
     displayName: z.string().max(128).optional(),
-    avatar: z.string().nullable().optional(),
     fields: z.record(z.string(), z.any()).optional()
 })
 
@@ -30,7 +27,6 @@ export const userAdminChangePasswordSchema = z.object({
 export const userAdminPatchSchema = z.object({
     displayName: z.string().max(128).optional(),
     enabled: z.boolean().optional(),
-    avatar: z.string().nullable().optional(),
 })
 
 export const userSchema = z.object({
@@ -41,7 +37,11 @@ export const userSchema = z.object({
     enabled: z.boolean(),
     createTime: z.date(),
     lastRefreshTime: z.date().nullable(),
-}).transform(({ uuid, ...e }) => ({...e, id: uuid}))
+}).transform(({ uuid, avatar, ...e }) => ({
+    ...e,
+    id: uuid,
+    avatar: avatar ? `/avatar/user/${avatar}` : null,
+}))
 
 export interface User {
     id: number
@@ -58,6 +58,6 @@ export interface User {
 
 export type UserCreateSchema = z.infer<typeof userCreateSchema>
 
-export type UserUpdateSchema = z.infer<typeof userAdminPatchSchema> & Partial<z.infer<typeof userAdminChangePasswordSchema>>
+export type UserUpdateSchema = z.infer<typeof userAdminPatchSchema> & Partial<z.infer<typeof userAdminChangePasswordSchema>> & {avatar?: string}
 
 export const userFields = ["id", "uuid", "username", "password", "displayName", "avatar", "enabled", "deleted", "createTime", "lastRefreshTime"] as const

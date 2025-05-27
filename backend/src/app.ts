@@ -1,4 +1,5 @@
 import Koa from "koa"
+import koaBody from "koa-body"
 import { bodyParser } from "@koa/bodyparser"
 import { auth } from "@/middleware/auth"
 import { logHandler } from "@/middleware/logger"
@@ -14,6 +15,7 @@ const app = new Koa()
 app.use(logHandler)
 app.use(corsMiddleware)
 app.use(errorHandler)
+app.use(koaBody({multipart: true, formidable: {maxFileSize: 1024 * 1024 * 10}}))
 app.use(bodyParser())
 app.use(auth)
 app.use(permission)

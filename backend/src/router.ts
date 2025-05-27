@@ -1,12 +1,13 @@
 import Router from "@koa/router"
 import { login, register, authorize, token } from "@/resources/authorize"
 import { listMyApps, retrieveMyApp } from "@/resources/app"
-import { getUserInfo, patchUserInfo, changeUserPassword, getUserInfoInApp, patchUserInfoInApp } from "@/resources/user"
+import { getUserInfo, patchUserInfo, changeUserPassword, getUserInfoInApp, patchUserInfoInApp, uploadUserAvatar } from "@/resources/user"
 import { deleteUser, listUsers, patchUser, patchUserPassword, postUser, retrieveUser } from "@/resources/admin-user"
-import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret } from "@/resources/admin-app"
+import { deleteApp, listApps, patchApp, postApp, retrieveApp, retrieveAppSecret, patchAppSecret, uploadAppAvatar } from "@/resources/admin-app"
 import { deleteAppPermission, listAppPermissions, patchAppPermission, postAppPermission, retrieveAppPermission } from "@/resources/admin-app-permission"
 import { listAppUsers, putAppUserPermissions, retrieveAppUser } from "@/resources/admin-app-user"
 import { getSettings, patchSettings } from "@/resources/setting"
+import { getAvatar } from "@/resources/avatar"
 
 const router = new Router()
 
@@ -15,9 +16,12 @@ router.post("/register", register)
 router.post("/authorize", authorize)
 router.post("/token", token)
 
+router.get("/avatar/:type/:filename", getAvatar)
+
 router.get("/my/user/info", getUserInfo)
 router.patch("/my/user/info", patchUserInfo)
 router.patch("/my/user/password", changeUserPassword)
+router.post("/my/user/avatar", uploadUserAvatar)
 router.get("/my/apps", listMyApps)
 router.get("/my/apps/:appId", retrieveMyApp)
 
@@ -38,6 +42,7 @@ router.patch("/admin/apps/:appId", patchApp)
 router.delete("/admin/apps/:appId", deleteApp)
 router.get("/admin/apps/:appId/secret", retrieveAppSecret)
 router.patch("/admin/apps/:appId/secret", patchAppSecret)
+router.post("/admin/apps/:appId/avatar", uploadAppAvatar)
 
 router.get("/admin/apps/:appId/permissions", listAppPermissions)
 router.post("/admin/apps/:appId/permissions", postAppPermission)

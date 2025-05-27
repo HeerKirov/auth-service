@@ -41,13 +41,13 @@ export async function createApp(app: AppCreateSchema, trx?: Knex.Transaction): P
         "appSecret": appSecret,
         "description": app.description ?? "",
         "url": app.url ?? "",
-        "avatar": app.avatar ?? null,
+        "avatar": null,
         "domains": JSON.stringify(app.domains) as any,
         "enabled": app.enabled,
         "createTime": createTime,
     }).returning("id")
 
-    return {id, appSecret, description: app.description ?? "", url: app.url ?? "", avatar: app.avatar ?? null, ...app, createTime}
+    return {id, appSecret, description: app.description ?? "", url: app.url ?? "", avatar: null, ...app, createTime}
 }
 
 export async function getApp(appId: string): Promise<App | null> {
