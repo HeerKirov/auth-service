@@ -16,6 +16,12 @@ export const getAppSecret = (appId: string) => fetchRequest<AppSecret>(`/admin/a
 
 export const flushAppSecret = (appId: string) => fetchRequest<AppSecret>(`/admin/apps/${appId}/secret`, {method: "PATCH"})
 
+export const uploadAvatar = (appId: string, file: Blob) => {
+    const form = new FormData()
+    form.append("file", file)
+    return fetchRequest<Pick<App, "avatar">>(`/admin/apps/${appId}/avatar`, {method: "POST", body: form})
+}
+
 export interface AdminAppCreateForm {
     appId: string
     appName: string

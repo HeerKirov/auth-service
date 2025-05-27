@@ -1,3 +1,4 @@
+import AvatarUploader from "./AvatarUploader.svelte"
 import LoginPage from "./LoginPage.svelte"
 import RegisterPage from "./RegisterPage.svelte"
 import PasswordModifier from "./PasswordModifier.svelte"
@@ -8,4 +9,4 @@ import PermissionArgumentListDisplay from "./PermissionArgumentListDisplay.svelt
 import PermissionArgumentListEditor from "./PermissionArgumentListEditor.svelte"
 
 export { LoginPage, RegisterPage, PasswordModifier, SecretViewer }
-export { PermissionListDisplay, PermissionListEditor, PermissionArgumentListDisplay, PermissionArgumentListEditor }
+export { AvatarUploader, PermissionListDisplay, PermissionListEditor, PermissionArgumentListDisplay, PermissionArgumentListEditor }

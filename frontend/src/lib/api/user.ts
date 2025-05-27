@@ -6,6 +6,12 @@ export const patchUserInfo = (data: UserPartialUpdateForm) => fetchRequest<User>
 
 export const patchUserPassword = (data: UserPasswordUpdateForm) => fetchRequest<User>("/my/user/password", {method: "PATCH", body: JSON.stringify(data)})
 
+export const uploadAvatar = (file: Blob) => {
+    const form = new FormData()
+    form.append("file", file)
+    return fetchRequest<Pick<User, "avatar">>("/my/user/avatar", {method: "POST", body: form})
+}
+
 export interface User {
     username: string
     displayName: string

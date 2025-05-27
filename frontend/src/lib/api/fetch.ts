@@ -3,13 +3,17 @@ import { getAccessToken, setAccessToken } from "@/lib/store/user.svelte"
 
 export async function fetchRequest<T, E extends string | undefined = undefined>(url: string, init?: RequestConfig): Promise<IResponse<T, E | undefined>> {
     const { authorization = true, query, ...config } = init ?? {}
-    const headers: Record<string, string> = {"content-type": "application/json"}
+    const headers: Record<string, string> = {}
     let input = `${import.meta.env.VITE_API_PREFIX}${url}`
 
     if(authorization) {
         const r = await preloadAuthorization()
         if(!r.ok) return {ok: false, status: r.status, message: r.message, error: r.error as E}
         headers["Authorization"] = `Bearer ${r.data}`
+    }
+
+    if(!(init?.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json"
     }
 
     if(query) {

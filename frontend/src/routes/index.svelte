@@ -3,6 +3,7 @@ import { onMount } from "svelte"
 import { slide } from "svelte/transition"
 import { ChartNoAxesGantt, KeySquare, LayoutPanelLeft, LogOut, ShieldBan, UserCog } from "lucide-svelte"
 import { Button, Input, PatchForm } from "@/components"
+import { AvatarUploader } from "@/layouts"
 import { auth, user, type User } from "@/lib/api"
 import { hasPermission, setAccessToken } from "@/lib/store/user.svelte"
 import { toDateString } from "@/utils/date"
@@ -14,6 +15,8 @@ let userInfo: User | null = $state(null)
 let isAdmin = $derived(hasPermission("ADMIN") || hasPermission("APP_ADMIN"))
 
 let isManageMenuOpen = $state(false)
+
+let avatarUploader: AvatarUploader | null = null
 
 onMount(async () => {
     const r = await user.getUserInfo()
@@ -31,6 +34,17 @@ const setDisplayName = async (displayName: string) => {
         return r.ok
     }
     return true
+}
+
+const openAvatarLoader = () => {
+    avatarUploader?.open()
+}
+
+const uploadAvatar = async (b: Blob) => {
+    const r = await user.uploadAvatar(b)
+    if(r.ok) {
+        userInfo = {...userInfo!, avatar: r.data.avatar}
+    }
 }
 
 const gotoApps = () => routePush("/my/apps")
@@ -51,7 +65,7 @@ const toggleManageMenu = () => isManageMenuOpen = !isManageMenuOpen
 
 {#if userInfo !== null}
     <div class="central-page">
-        <div class="text-center"><img class="object-cover object-center inline-block rounded-full w-32 h-32" src={userInfo.avatar ?? empty} alt="avatar"/></div>
+        <button class="text-center" onclick={openAvatarLoader}><img class="object-cover object-center inline-block rounded-full cursor-pointer w-32 h-32" src={userInfo.avatar ?? empty} alt="avatar"/></button>
         <div class="underline mt-4"><span class="select-none">@</span>{userInfo.username}</div>
         <PatchForm class="mb-2" value={userInfo.displayName} setValue={setDisplayName}>
             {#snippet display(value)}
@@ -93,3 +107,4 @@ const toggleManageMenu = () => isManageMenuOpen = !isManageMenuOpen
         {/if}
     </div>
 {/if}
+<AvatarUploader bind:this={avatarUploader} onSubmit={uploadAvatar}/>

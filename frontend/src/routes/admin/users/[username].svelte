@@ -71,7 +71,7 @@ const closeMenu = () => menuMode = null
 
 {#if userInfo !== null}
     <div class="text-center">
-        <img class="inline-block rounded-full w-24 h-24" src={userInfo.avatar ?? empty} alt="user avatar"/>
+        <img class="inline-block object-cover object-center rounded-full w-24 h-24" src={userInfo.avatar ?? empty} alt="user avatar"/>
         <div class="underline mt-3"><span class="select-none">@</span>{userInfo.username}</div>
         <PatchForm class="mb-2" value={userInfo.displayName} setValue={setDisplayName}>
             {#snippet display(value)}

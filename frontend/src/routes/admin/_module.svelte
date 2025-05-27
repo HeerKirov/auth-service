@@ -37,7 +37,7 @@ onMount(async () => {
         <div class="basis-1/2 sm:basis-full"></div>
         {#if userInfo !== null}
             <Anchor class="shrink-0 flex items-center" mode="underline" color="secondary" href="/">
-                <img class="shrink-0 inline-block rounded-full w-8 h-8" src={userInfo.avatar ?? empty} alt="user avatar"/>
+                <img class="shrink-0 object-cover object-center inline-block rounded-full w-8 h-8" src={userInfo.avatar ?? empty} alt="user avatar"/>
                 <span class="hidden sm:inline pl-1">{userInfo.displayName}</span>
             </Anchor>
         {/if}

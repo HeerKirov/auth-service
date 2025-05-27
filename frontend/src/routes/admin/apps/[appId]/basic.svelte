@@ -3,7 +3,7 @@ import { getContext, onMount } from "svelte"
 import { slide } from "svelte/transition"
 import { KeySquare, ShieldBan, ShieldCheck, Trash } from "lucide-svelte"
 import { Anchor, Button, ClipboardButton, Input, ListInputEditor, PatchForm } from "@/components"
-import { SecretViewer } from "@/layouts"
+import { AvatarUploader, SecretViewer } from "@/layouts"
 import { admin, type AdminAppPartialUpdateForm, type App } from "@/lib/api"
 import { toDateString } from "@/utils/date"
 import { routeReplace } from "@/utils/route"
@@ -31,6 +31,8 @@ async function setValue<T extends (keyof AdminAppPartialUpdateForm)>(field: T, v
 
 let menuMode: "secret" | "ban" | "delete" | null = $state(null)
 
+let avatarUploader: AvatarUploader | null = null
+
 const gotoSecret = () => menuMode = menuMode === "secret" ? null : "secret"
 
 const gotoBan = () => menuMode = menuMode === "ban" ? null : "ban"
@@ -55,11 +57,22 @@ const deleteApp = async () => {
     }
 }
 
+const openAvatarLoader = () => {
+    avatarUploader?.open()
+}
+
+const uploadAvatar = async (b: Blob) => {
+    const r = await admin.app.uploadAvatar(appId, b)
+    if(r.ok) {
+        data = {...data!, avatar: r.data.avatar}
+    }
+}
+
 </script>
 
 {#if data !== null}
     <div class="flex">
-        <img class="shrink-0 rounded-lg w-24 h-24" src={data.avatar ?? empty} alt="app avatar"/>
+        <button onclick={openAvatarLoader}><img class="shrink-0 rounded-lg object-cover object-center w-24 h-24" src={data.avatar ?? empty} alt="app avatar"/></button>
         <div class="pl-3 pt-1">
             <p class="text-gray-400">{data.appId}<ClipboardButton data={data.appId}/></p>
             <PatchForm class="mb-2" value={data.appName} setValue={v => setValue("appName", v)}>
@@ -172,3 +185,4 @@ const deleteApp = async () => {
         </div>
     {/if}
 {/if}
+<AvatarUploader bind:this={avatarUploader} onSubmit={uploadAvatar}/>
